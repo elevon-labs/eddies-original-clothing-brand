@@ -59,7 +59,7 @@ export default function CartPage() {
             {/* Cart Items */}
             <div className="lg:col-span-2 space-y-6">
               {items.map((item) => (
-                <div key={item.id} className="flex gap-6 p-6 bg-neutral-50 rounded-lg border border-black/5">
+                <div key={item.cartId} className="flex gap-6 p-6 bg-neutral-50 rounded-lg border border-black/5">
                   <div className="relative w-32 h-40 flex-shrink-0 bg-neutral-200 rounded-lg overflow-hidden">
                     <Image src={item.image || "/placeholder.svg"} alt={item.name} fill className="object-cover" />
                   </div>
@@ -69,11 +69,20 @@ export default function CartPage() {
                       <div>
                         <h3 className="font-bold text-lg mb-1">{item.name}</h3>
                         {item.size && <p className="text-sm text-black/60">Size: {item.size}</p>}
+                        {item.color && (
+                          <div className="flex items-center gap-2 text-sm text-black/60 mt-1">
+                            <span>Color:</span>
+                            <div
+                              className="w-4 h-4 rounded-full border border-black/10"
+                              style={{ backgroundColor: item.color }}
+                            />
+                          </div>
+                        )}
                       </div>
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => removeItem(item.id)}
+                        onClick={() => removeItem(item.cartId)}
                         className="text-black/60 hover:text-red-600 hover:bg-red-50"
                       >
                         <Trash2 className="h-5 w-5" />
@@ -85,7 +94,7 @@ export default function CartPage() {
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          onClick={() => updateQuantity(item.cartId, item.quantity - 1)}
                           className="h-8 w-8 bg-white"
                         >
                           <Minus className="h-4 w-4" />
@@ -94,7 +103,7 @@ export default function CartPage() {
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          onClick={() => updateQuantity(item.cartId, item.quantity + 1)}
                           className="h-8 w-8 bg-white"
                         >
                           <Plus className="h-4 w-4" />

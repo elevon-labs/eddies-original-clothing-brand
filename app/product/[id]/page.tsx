@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button"
 import { useCart } from "@/components/cart-provider"
 import { Heart, Star, Truck, RotateCcw, Shield, ChevronDown, ChevronUp } from "lucide-react"
 import { ProductCard } from "@/components/product-card"
+import { ProductReviews } from "@/components/product-reviews"
 import Image from "next/image"
 
 export default function ProductPage({ params }: { params: { id: string } }) {
   const [selectedSize, setSelectedSize] = useState("")
+  const [selectedColor, setSelectedColor] = useState("")
   const [quantity, setQuantity] = useState(1)
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [selectedImage, setSelectedImage] = useState(0)
@@ -33,6 +35,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
       "/black-oversized-tee-luxury-streetwear.jpg",
     ],
     sizes: ["XS", "S", "M", "L", "XL", "XXL"],
+    colors: ["#000000", "#FFFFFF", "#808080", "#404040"],
     rating: 4.8,
     reviews: 124,
     inStock: true,
@@ -198,6 +201,26 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 </div>
               </div>
 
+              {/* Color Selection */}
+              <div className="mb-6">
+                <label className="font-bold text-sm tracking-wider mb-3 block">SELECT COLOR</label>
+                <div className="flex gap-3">
+                  {product.colors.map((color) => (
+                    <button
+                      key={color}
+                      onClick={() => setSelectedColor(color)}
+                      className={`w-10 h-10 rounded-full border-2 transition-all ${
+                        selectedColor === color
+                          ? "border-black scale-110 ring-2 ring-black ring-offset-2"
+                          : "border-black/10 hover:border-black"
+                      }`}
+                      style={{ backgroundColor: color }}
+                      aria-label={`Select color ${color}`}
+                    />
+                  ))}
+                </div>
+              </div>
+
               {/* Quantity */}
               <div className="mb-6">
                 <label className="font-bold text-sm tracking-wider mb-3 block">QUANTITY</label>
@@ -306,6 +329,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               </div>
             </div>
           </div>
+
+          {/* Reviews Section */}
+          <ProductReviews />
 
           {/* Related Products */}
           <section>

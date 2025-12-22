@@ -11,13 +11,14 @@ interface CartItem {
   quantity: number
   size?: string
   color?: string
+  cartId: string
 }
 
 interface CartContextType {
   items: CartItem[]
-  addItem: (item: CartItem) => void
-  removeItem: (id: number) => void
-  updateQuantity: (id: number, quantity: number) => void
+  addItem: (item: Omit<CartItem, "cartId">) => void
+  removeItem: (cartId: string) => void
+  updateQuantity: (cartId: string, quantity: number) => void
   clearCart: () => void
   total: number
   itemCount: number
@@ -31,7 +32,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const saved = localStorage.getItem("eddie-cart")
     if (saved) {
-      setItems(JSON.parse(saved))
+      const parsed = JSON.parse(saved)
+      setItems(
+        parsed.map((item: any) => ({
+          ...item,
+          cartId: item.cartId || `${item.id}-${item.size || ""}-${item.color || ""}`,
+        })),
+      )
     }
   }, [])
 
@@ -39,26 +46,29 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("eddie-cart", JSON.stringify(items))
   }, [items])
 
-  const addItem = (item: CartItem) => {
+  const addItem = (item: Omit<CartItem, "cartId">) => {
+    const cartId = `${item.id}-${item.size || ""}-${item.color || ""}`
     setItems((current) => {
-      const existing = current.find((i) => i.id === item.id && i.size === item.size)
+      const existing = current.find((i) => i.cartId === cartId)
       if (existing) {
-        return current.map((i) => (i.id === item.id && i.size === item.size ? { ...i, quantity: i.quantity + 1 } : i))
+        return current.map((i) =>
+          i.cartId === cartId ? { ...i, quantity: i.quantity + item.quantity } : i,
+        )
       }
-      return [...current, { ...item, quantity: 1 }]
+      return [...current, { ...item, cartId }]
     })
   }
 
-  const removeItem = (id: number) => {
-    setItems((current) => current.filter((item) => item.id !== id))
+  const removeItem = (cartId: string) => {
+    setItems((current) => current.filter((item) => item.cartId !== cartId))
   }
 
-  const updateQuantity = (id: number, quantity: number) => {
+  const updateQuantity = (cartId: string, quantity: number) => {
     if (quantity <= 0) {
-      removeItem(id)
+      removeItem(cartId)
       return
     }
-    setItems((current) => current.map((item) => (item.id === id ? { ...item, quantity } : item)))
+    setItems((current) => current.map((item) => (item.cartId === cartId ? { ...item, quantity } : item)))
   }
 
   const clearCart = () => {

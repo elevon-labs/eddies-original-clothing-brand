@@ -162,12 +162,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-10 animate-bounce">
-          <div className="text-xs tracking-wider text-black/60 mb-2 text-center">SCROLL TO EXPLORE</div>
-          <div className="w-6 h-10 border-2 border-black/20 rounded-full flex items-start justify-center p-2 mx-auto">
-            <div className="w-1 h-2 bg-black/40 rounded-full" />
-          </div>
-        </div>
+
       </section>
 
       {/* Trust Badges */}
