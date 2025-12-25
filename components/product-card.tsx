@@ -75,16 +75,10 @@ export function ProductCard({ product }: { product: Product }) {
 
           {/* Badges */}
           <div className="absolute top-4 left-4 flex flex-col gap-2">
-            {product.badge && (
+            {product.badge && product.badge !== "TRENDING" && product.badge !== "EXCLUSIVE" && (
               <span
                 className={`text-xs font-bold tracking-wider px-3 py-1 rounded-full ${
-                  product.badge === "SALE"
-                    ? "bg-red-600 text-white"
-                    : product.badge === "NEW"
-                      ? "bg-black text-white"
-                      : product.badge === "TRENDING"
-                        ? "bg-blue-600 text-white"
-                        : "bg-purple-600 text-white"
+                  product.badge === "SALE" ? "bg-red-600 text-white" : "bg-black text-white"
                 }`}
               >
                 {product.badge}
@@ -99,15 +93,6 @@ export function ProductCard({ product }: { product: Product }) {
 
           {/* Action Buttons */}
           <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <Button
-              size="icon"
-              onClick={handleWishlist}
-              className={`bg-white hover:bg-white/70 ${
-                isWishlisted ? "text-red-600" : "text-black"
-              } shadow-lg transition-colors`}
-            >
-              <Heart className={`h-5 w-5 ${isWishlisted ? "fill-current" : ""}`} />
-            </Button>
             <Button size="icon" onClick={handleAddToCart} className="bg-black text-white hover:bg-black/70 shadow-lg">
               <ShoppingBag className="h-5 w-5" />
             </Button>

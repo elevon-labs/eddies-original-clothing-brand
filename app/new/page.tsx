@@ -79,10 +79,10 @@ export default function NewArrivalsPage() {
           <div className="inline-block mb-6 px-4 py-1 border border-white/30 backdrop-blur-sm rounded-full text-xs tracking-[0.25em] font-semibold">
             JUST DROPPED
           </div>
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tighter mb-6">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tighter mb-6">
             New Arrivals
           </h1>
-          <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-2xl mx-auto leading-relaxed">
             Discover the latest additions to the Eddie Originals collection. Fresh fits, premium materials, and bold designs defining the season.
           </p>
         </div>

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Mail, Phone, MapPin, Instagram, Twitter, Facebook } from "lucide-react"
+import { TikTok } from "@/components/icons"
 import Link from "next/link"
 
 export default function ContactPage() {
@@ -34,8 +35,8 @@ export default function ContactPage() {
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="mb-16 text-center">
-            <h1 className="text-5xl md:text-7xl font-bold mb-4 tracking-tighter">Get In Touch</h1>
-            <p className="text-lg text-black/60 max-w-2xl mx-auto">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-4 tracking-tighter">Get In Touch</h1>
+            <p className="text-base sm:text-lg text-black/60 max-w-2xl mx-auto">
               Have questions about our products, need styling advice, or want to collaborate? We'd love to hear from
               you.
             </p>
@@ -149,7 +150,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-bold mb-1">Location</h3>
-                      <p className="text-black/60">Lagos, Nigeria</p>
+                      <p className="text-black/60">Ejigbo, Lagos Nigeria</p>
                       <p className="text-sm text-black/50">Shipping worldwide</p>
                     </div>
                   </div>
@@ -169,8 +170,18 @@ export default function ContactPage() {
                     asChild
                     className="text-white border-white/20 hover:bg-white/10 bg-transparent"
                   >
-                    <Link href="https://instagram.com/eddieoriginals" target="_blank">
+                    <Link href="https://instagram.com/eddie_originals_" target="_blank">
                       <Instagram className="h-5 w-5" />
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    asChild
+                    className="text-white border-white/20 hover:bg-white/10 bg-transparent"
+                  >
+                    <Link href="https://tiktok.com/@eddie_originals" target="_blank">
+                      <TikTok className="h-5 w-5" />
                     </Link>
                   </Button>
                   <Button

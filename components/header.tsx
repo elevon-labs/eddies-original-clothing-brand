@@ -12,16 +12,6 @@ export function Header() {
 
   return (
     <>
-      {/* Top Banner */}
-      <div className="bg-black text-white py-3 px-4 text-center text-sm">
-        <p className="tracking-wide">
-          FREE SHIPPING ON ORDERS OVER ₦50,000 | NEW ARRIVALS NOW LIVE{" "}
-          <Link href="/new" className="underline underline-offset-4 font-semibold ml-2">
-            SHOP NOW
-          </Link>
-        </p>
-      </div>
-
       {/* Navigation */}
       <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-black/10 shadow-sm">
         <div className="w-full mx-auto px-6 md:px-12 lg:px-16">

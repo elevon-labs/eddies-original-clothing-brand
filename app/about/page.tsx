@@ -15,12 +15,12 @@ export default function AboutPage() {
           <div className="inline-block mb-6 px-4 py-1 bg-black text-white text-xs tracking-[0.25em] font-semibold rounded-full">
             OUR STORY
           </div>
-          <h1 className="text-6xl md:text-8xl font-bold mb-8 tracking-tighter text-balance leading-[0.95]">
+          <h1 className="text-4xl sm:text-6xl md:text-8xl font-bold mb-8 tracking-tighter text-balance leading-[0.95]">
             More Than Clothing.
             <br />
             It's Identity.
           </h1>
-          <p className="text-xl text-black/70 leading-relaxed text-balance max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-black/70 leading-relaxed text-balance max-w-3xl mx-auto">
             Eddie Originals is a luxury streetwear brand built on confidence, creativity, and presence. Every piece
             tells a story of quality, style, and bold expression.
           </p>
@@ -39,13 +39,13 @@ export default function AboutPage() {
               />
             </div>
             <div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 tracking-tight">
                 Born from Lagos, Designed for the World
               </h2>
-              <div className="space-y-4 text-lg text-black/70 leading-relaxed">
+              <div className="space-y-4 text-base sm:text-lg text-black/70 leading-relaxed">
                 <p>
                   Eddie Originals was born from a simple belief: your clothes should reflect who you are. Founded in
-                  Lagos, Nigeria, we create luxury streetwear that blends bold design with premium craftsmanship.
+                  Ejigbo, Lagos Nigeria, we create luxury streetwear that blends bold design with premium craftsmanship.
                 </p>
                 <p>
                   Every piece in our collection is carefully designed for those who move differently, think boldly, and
@@ -61,8 +61,8 @@ export default function AboutPage() {
 
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div className="order-2 md:order-1">
-              <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">For Those Who Stand Out</h2>
-              <div className="space-y-4 text-lg text-black/70 leading-relaxed">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 tracking-tight">For Those Who Stand Out</h2>
+              <div className="space-y-4 text-base sm:text-lg text-black/70 leading-relaxed">
                 <p>
                   Eddie Originals represents individuals who know who they are and don't need permission to express it.
                   Our designs balance bold street energy with premium quality.
@@ -93,8 +93,8 @@ export default function AboutPage() {
       <section className="py-24 px-6 bg-black text-white">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight">Our Values</h2>
-            <p className="text-xl text-white/70 max-w-2xl mx-auto">The principles that guide everything we create</p>
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 tracking-tight">Our Values</h2>
+            <p className="text-base sm:text-lg md:text-xl text-white/70 max-w-2xl mx-auto">The principles that guide everything we create</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-12">
@@ -134,10 +134,10 @@ export default function AboutPage() {
       {/* CTA */}
       <section className="py-24 px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight text-balance">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 tracking-tight text-balance">
             Ready to Join the Movement?
           </h2>
-          <p className="text-xl text-black/60 mb-12 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl text-black/60 mb-12 max-w-2xl mx-auto leading-relaxed">
             Explore our collection and discover pieces that reflect your confidence, style, and identity.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

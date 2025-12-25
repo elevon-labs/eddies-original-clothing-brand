@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Instagram, Twitter, Facebook } from "lucide-react"
+import { TikTok } from "@/components/icons"
 
 export function Footer() {
   return (
@@ -10,7 +11,7 @@ export function Footer() {
           <div className="md:col-span-2">
             <h3 className="text-2xl font-bold mb-4 tracking-tight">EDDIE ORIGINALS</h3>
             <p className="text-white/60 mb-6 max-w-md leading-relaxed text-balance">
-              Premium luxury streetwear with identity. Born in Lagos, designed for the world. Every piece crafted with
+              Premium luxury streetwear with identity. Born in Ejigbo, Lagos Nigeria, designed for the world. Every piece crafted with
               confidence, purpose, and style.
             </p>
             <div className="flex gap-3">
@@ -20,7 +21,7 @@ export function Footer() {
                 asChild
                 className="text-white hover:bg-white/10 border border-white/20"
               >
-                <Link href="https://instagram.com/eddieoriginals" target="_blank">
+                <Link href="https://instagram.com/eddie_originals_" target="_blank">
                   <Instagram className="h-5 w-5" />
                 </Link>
               </Button>
@@ -30,18 +31,8 @@ export function Footer() {
                 asChild
                 className="text-white hover:bg-white/10 border border-white/20"
               >
-                <Link href="https://twitter.com/eddieoriginals" target="_blank">
-                  <Twitter className="h-5 w-5" />
-                </Link>
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                asChild
-                className="text-white hover:bg-white/10 border border-white/20"
-              >
-                <Link href="https://facebook.com/eddieoriginals" target="_blank">
-                  <Facebook className="h-5 w-5" />
+                <Link href="https://tiktok.com/@eddie_originals" target="_blank">
+                  <TikTok className="h-5 w-5" />
                 </Link>
               </Button>
             </div>

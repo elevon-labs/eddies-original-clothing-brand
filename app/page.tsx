@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, TruckIcon, Shield, Sparkles, Instagram } from "lucide-react"
+import { TikTok } from "@/components/icons"
 import { ProductCard } from "@/components/product-card"
 import { Newsletter } from "@/components/newsletter"
 import { Header } from "@/components/header"
@@ -128,15 +129,12 @@ export default function HomePage() {
         </div>
 
         <div className="relative z-10 text-center px-6 max-w-5xl">
-          <div className="inline-block mb-6 px-4 py-2 bg-black text-white text-xs tracking-[0.3em] font-semibold rounded-full">
-            SPRING/SUMMER 2025
-          </div>
-          <h1 className="text-6xl md:text-8xl lg:text-9xl font-bold mb-6 tracking-tighter text-balance leading-[0.95]">
-            WEAR YOUR
+          <h1 className="text-4xl sm:text-6xl md:text-8xl lg:text-9xl font-bold mb-6 tracking-tighter text-balance leading-[0.95]">
+            Excellent Iconic
             <br />
-            CONFIDENCE
+            Creativity
           </h1>
-          <p className="text-lg md:text-xl text-black/70 mb-12 max-w-2xl mx-auto text-balance leading-relaxed">
+          <p className="text-base md:text-xl text-black/70 mb-12 max-w-2xl mx-auto text-balance leading-relaxed">
             Eddie Originals brings you premium streetwear designed for the bold, the confident, and those who refuse to
             blend in. Every piece tells a story of quality, style, and attitude.
           </p>
@@ -168,20 +166,8 @@ export default function HomePage() {
       {/* Trust Badges */}
       <section className="py-16 border-y border-black/10 bg-neutral-50">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="flex items-center gap-4">
-              <div className="flex-shrink-0">
-                <div className="w-14 h-14 bg-black text-white rounded-full flex items-center justify-center">
-                  <TruckIcon className="h-6 w-6" />
-                </div>
-              </div>
-              <div>
-                <h3 className="font-bold text-sm tracking-wide mb-1">FREE SHIPPING</h3>
-                <p className="text-xs text-black/60 leading-relaxed">On orders over ₦50,000</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="flex flex-col items-center text-center gap-4">
               <div className="flex-shrink-0">
                 <div className="w-14 h-14 bg-black text-white rounded-full flex items-center justify-center">
                   <Shield className="h-6 w-6" />
@@ -193,7 +179,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col items-center text-center gap-4">
               <div className="flex-shrink-0">
                 <div className="w-14 h-14 bg-black text-white rounded-full flex items-center justify-center">
                   <Sparkles className="h-6 w-6" />
@@ -205,7 +191,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col items-center text-center gap-4">
               <div className="flex-shrink-0">
                 <div className="w-14 h-14 bg-black text-white rounded-full flex items-center justify-center">
                   <svg
@@ -219,14 +205,14 @@ export default function HomePage() {
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
+                      d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
                     />
                   </svg>
                 </div>
               </div>
               <div>
-                <h3 className="font-bold text-sm tracking-wide mb-1">EASY RETURNS</h3>
-                <p className="text-xs text-black/60 leading-relaxed">30-day return policy</p>
+                <h3 className="font-bold text-sm tracking-wide mb-1">NO REFUND POLICY</h3>
+                <p className="text-xs text-black/60 leading-relaxed">All sales are final</p>
               </div>
             </div>
           </div>
@@ -238,12 +224,12 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <div className="inline-block mb-4 px-4 py-1 bg-black/5 text-black text-xs tracking-[0.25em] font-semibold rounded-full">
-              NEW ARRIVALS
+              PRODUCTS
             </div>
-            <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter mb-6 text-balance">
-              Fresh Drops, Bold Looks
+            <h2 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter mb-6 text-balance">
+              Drip Fresh, Street Elite
             </h2>
-            <p className="text-lg text-black/60 max-w-2xl mx-auto leading-relaxed text-balance">
+            <p className="text-base sm:text-lg text-black/60 max-w-2xl mx-auto leading-relaxed text-balance">
               Discover our latest collection of premium streetwear. Each piece is designed to make a statement and
               elevate your wardrobe with confidence and style.
             </p>
@@ -279,14 +265,14 @@ export default function HomePage() {
               <div className="inline-block mb-6 px-4 py-1 bg-white/10 text-white text-xs tracking-[0.25em] font-semibold rounded-full">
                 OUR STORY
               </div>
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-8 tracking-tight text-balance leading-tight">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-8 tracking-tight text-balance leading-tight">
                 More Than Just Clothing. It's Identity.
               </h2>
-              <p className="text-lg text-white/70 leading-relaxed mb-6 text-balance">
+              <p className="text-base sm:text-lg text-white/70 leading-relaxed mb-6 text-balance">
                 Eddie Originals was born from a simple belief: your clothes should reflect who you are. Founded in
-                Lagos, Nigeria, we create luxury streetwear that blends bold design with premium craftsmanship.
+                Ejigbo, Lagos Nigeria, we create luxury streetwear that blends bold design with premium craftsmanship.
               </p>
-              <p className="text-lg text-white/70 leading-relaxed mb-8 text-balance">
+              <p className="text-base sm:text-lg text-white/70 leading-relaxed mb-8 text-balance">
                 Every piece in our collection is carefully designed for those who move differently, think boldly, and
                 dress with purpose. We don't follow trends—we create them.
               </p>
@@ -319,10 +305,10 @@ export default function HomePage() {
             <div className="inline-block mb-4 px-4 py-1 bg-black/5 text-black text-xs tracking-[0.25em] font-semibold rounded-full">
               COLLECTIONS
             </div>
-            <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter mb-6 text-balance">
+            <h2 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter mb-6 text-balance">
               Curated For You
             </h2>
-            <p className="text-lg text-black/60 max-w-2xl mx-auto leading-relaxed text-balance">
+            <p className="text-base sm:text-lg text-black/60 max-w-2xl mx-auto leading-relaxed text-balance">
               Explore our carefully curated collections, each telling a unique story through premium fabrics, bold
               designs, and timeless style.
             </p>
@@ -362,7 +348,7 @@ export default function HomePage() {
             <div className="inline-block mb-4 px-4 py-1 bg-black/5 text-black text-xs tracking-[0.25em] font-semibold rounded-full">
               TESTIMONIALS
             </div>
-            <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter mb-6 text-balance">
+            <h2 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter mb-6 text-balance">
               What Our Customers Say
             </h2>
           </div>
@@ -417,7 +403,7 @@ export default function HomePage() {
       <section className="py-24 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">Follow Us @eddieoriginals</h2>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">Follow Us @eddie_originals_</h2>
             <p className="text-lg text-black/60">Join the community and see how others style Eddie Originals</p>
           </div>
 
@@ -425,7 +411,7 @@ export default function HomePage() {
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
               <Link
                 key={i}
-                href="https://instagram.com/eddieoriginals"
+                href="https://instagram.com/eddie_originals_"
                 target="_blank"
                 className="relative aspect-square bg-neutral-100 rounded-lg overflow-hidden group"
               >
@@ -441,15 +427,25 @@ export default function HomePage() {
             ))}
           </div>
 
-          <div className="text-center mt-12">
+          <div className="flex flex-col sm:flex-row justify-center gap-4 mt-12">
             <Button
               size="lg"
               asChild
               className="bg-black text-white hover:bg-black/90 font-semibold tracking-wide px-10"
             >
-              <Link href="https://instagram.com/eddieoriginals" target="_blank">
+              <Link href="https://instagram.com/eddie_originals_" target="_blank">
                 <Instagram className="mr-2 h-5 w-5" />
                 FOLLOW US ON INSTAGRAM
+              </Link>
+            </Button>
+            <Button
+              size="lg"
+              asChild
+              className="bg-black text-white hover:bg-black/90 font-semibold tracking-wide px-10"
+            >
+              <Link href="https://tiktok.com/@eddie_originals" target="_blank">
+                <TikTok className="mr-2 h-5 w-5" />
+                FOLLOW US ON TIKTOK
               </Link>
             </Button>
           </div>
