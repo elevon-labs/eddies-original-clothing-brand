@@ -8,6 +8,8 @@ import { Separator } from "@/components/ui/separator"
 import { useState, useEffect } from "react"
 import { Eye, EyeOff } from "lucide-react"
 
+import { AccountPolicyInfo } from "@/components/account-policy-info"
+
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -45,11 +47,11 @@ export default function SignupPage() {
         <div className="w-full min-h-[120vh] flex flex-col items-center justify-center p-4 py-24 relative">
           
           {/* Main Card Container */}
-          <div className="w-full max-w-[420px] bg-white rounded-[24px] shadow-2xl overflow-hidden p-8 shrink-0">
+          <div className="w-full max-w-[1000px] bg-white rounded-[24px] shadow-2xl overflow-hidden shrink-0 grid grid-cols-1 md:grid-cols-2">
             
-            <div className="flex flex-col w-full">
+            <div className="flex flex-col w-full p-8 md:p-12">
               
-              <div className="flex-1 flex flex-col justify-center w-full">
+              <div className="flex-1 flex flex-col justify-center w-full max-w-sm mx-auto">
                 {/* Centered Logo Branding */}
                 <div className="flex flex-col items-center mb-6">
                   <Link href="/" className="group flex flex-col items-center gap-2 transition-opacity hover:opacity-80">
@@ -178,6 +180,14 @@ export default function SignupPage() {
                     Log in
                   </Link>
                 </div>
+
+                <div className="text-center text-xs text-black/30 mt-4">
+                  By continuing, you agree to our{" "}
+                  <Link href="/privacy-policy" className="underline hover:text-black/60">Privacy Policy</Link>{" "}
+                  and{" "}
+                  <Link href="/terms" className="underline hover:text-black/60">Terms of Service</Link>.
+                </div>
+
                  <div className="mt-4 text-center">
                    <Link href="/" className="text-xs font-medium text-black/40 hover:text-black transition-colors uppercase tracking-wider">
                       Back to Store
@@ -185,6 +195,11 @@ export default function SignupPage() {
                 </div>
               </div>
             </div>
+            
+            <div className="hidden md:block">
+              <AccountPolicyInfo />
+            </div>
+
           </div>
         </div>
       </div>

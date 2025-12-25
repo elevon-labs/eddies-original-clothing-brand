@@ -272,7 +272,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 </div>
                 <div className="flex items-center gap-3">
                   <RotateCcw className="h-5 w-5 text-black/60" />
-                  <span className="text-sm">30-day easy returns</span>
+                  <span className="text-sm">No refund policy</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Shield className="h-5 w-5 text-black/60" />
@@ -320,8 +320,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                         business days within Lagos and 5-7 business days nationwide.
                       </p>
                       <p>
-                        <strong>Returns:</strong> We offer a 30-day return policy. Items must be unworn, unwashed, and
-                        in original condition with tags attached.
+                        <strong>Returns:</strong> All sales are final. No refunds or exchanges.
                       </p>
                     </div>
                   )}

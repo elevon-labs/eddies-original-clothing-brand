@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { XCircle } from "lucide-react"
+import { AccountPolicyInfo } from "@/components/account-policy-info"
 
 export default function VerificationErrorPage() {
   return (
@@ -15,9 +16,11 @@ export default function VerificationErrorPage() {
         <div className="absolute inset-0 bg-white/60 mix-blend-overlay" />
       </div>
 
-      <div className="relative z-10 max-w-md w-full bg-white p-8 md:p-12 rounded-[32px] shadow-2xl text-center overflow-hidden">
+      <div className="relative z-10 w-full max-w-[1000px] bg-white rounded-[32px] shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2">
         {/* Decorative background element */}
-        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-500 to-red-600" />
+        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-500 to-red-600 z-20" />
+
+        <div className="relative p-8 md:p-12 text-center flex flex-col justify-center w-full">
 
         {/* Centered Logo Branding */}
         <div className="flex flex-col items-center mb-8 mt-4">
@@ -48,9 +51,10 @@ export default function VerificationErrorPage() {
           </Button>
 
           <div className="text-center text-xs text-black/30 mt-2 mb-2">
+            By continuing, you agree to our{" "}
             <Link href="/privacy-policy" className="underline hover:text-black/60">Privacy Policy</Link>{" "}
-            &bull;{" "}
-            <Link href="/terms" className="underline hover:text-black/60">Terms</Link>
+            and{" "}
+            <Link href="/terms" className="underline hover:text-black/60">Terms of Service</Link>.
           </div>
           
           <Button variant="outline" asChild className="w-full h-12 border-black/10 hover:bg-black/5 font-medium rounded-lg cursor-pointer transition-colors">
@@ -67,6 +71,12 @@ export default function VerificationErrorPage() {
             </Link>
           </div>
         </div>
+      </div>
+      
+      <div className="hidden md:block">
+        <AccountPolicyInfo />
+      </div>
+      
       </div>
     </div>
   )

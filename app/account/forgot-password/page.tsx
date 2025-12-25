@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label"
 import { ArrowLeft } from "lucide-react"
 import { useEffect } from "react"
 
+import { AccountPolicyInfo } from "@/components/account-policy-info"
+
 export default function ForgotPasswordPage() {
   // Ensure content is visible/centered on mobile mount
   useEffect(() => {
@@ -41,11 +43,11 @@ export default function ForgotPasswordPage() {
         <div className="w-full min-h-[120vh] flex flex-col items-center justify-center p-4 py-24 relative">
           
           {/* Main Card Container */}
-          <div className="w-full max-w-[420px] bg-white rounded-[24px] shadow-2xl overflow-hidden p-8 shrink-0">
+          <div className="w-full max-w-[1000px] bg-white rounded-[24px] shadow-2xl overflow-hidden shrink-0 grid grid-cols-1 md:grid-cols-2">
             
-            <div className="flex flex-col w-full">
+            <div className="flex flex-col w-full p-8 md:p-12">
               
-              <div className="flex-1 flex flex-col justify-center w-full">
+              <div className="flex-1 flex flex-col justify-center w-full max-w-sm mx-auto">
                 {/* Centered Logo Branding */}
                 <div className="flex flex-col items-center mb-6">
                   <Link href="/" className="group flex flex-col items-center gap-2 transition-opacity hover:opacity-80">
@@ -104,6 +106,10 @@ export default function ForgotPasswordPage() {
                     </Link>
                 </div>
               </div>
+            </div>
+
+            <div className="hidden md:block">
+              <AccountPolicyInfo />
             </div>
 
           </div>

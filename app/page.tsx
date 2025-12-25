@@ -259,20 +259,31 @@ export default function HomePage() {
 
       {/* Brand Story Section */}
       <section className="py-32 px-6 bg-black text-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-16 items-center">
-            <div>
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            {/* Image Side - Hidden on Mobile */}
+            <div className="hidden lg:block relative h-[600px] rounded-2xl overflow-hidden">
+              <img
+                src="/luxury-streetwear-brand-photography-black-and-whit.jpg"
+                alt="Eddie Originals Brand Story"
+                className="absolute inset-0 w-full h-full object-cover opacity-90"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-40" />
+            </div>
+
+            {/* Content Side */}
+            <div className="max-w-4xl mx-auto text-center lg:text-left lg:mx-0">
               <div className="inline-block mb-6 px-4 py-1 bg-white/10 text-white text-xs tracking-[0.25em] font-semibold rounded-full">
                 OUR STORY
               </div>
               <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-8 tracking-tight text-balance leading-tight">
                 More Than Just Clothing. It's Identity.
               </h2>
-              <p className="text-base sm:text-lg text-white/70 leading-relaxed mb-6 text-balance">
+              <p className="text-base sm:text-lg text-white/70 leading-relaxed mb-6 text-balance max-w-2xl mx-auto lg:mx-0">
                 Eddie Originals was born from a simple belief: your clothes should reflect who you are. Founded in
                 Ejigbo, Lagos Nigeria, we create luxury streetwear that blends bold design with premium craftsmanship.
               </p>
-              <p className="text-base sm:text-lg text-white/70 leading-relaxed mb-8 text-balance">
+              <p className="text-base sm:text-lg text-white/70 leading-relaxed mb-8 text-balance max-w-2xl mx-auto lg:mx-0">
                 Every piece in our collection is carefully designed for those who move differently, think boldly, and
                 dress with purpose. We don't follow trends—we create them.
               </p>
@@ -286,13 +297,6 @@ export default function HomePage() {
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-            </div>
-            <div className="relative h-[600px] rounded-2xl overflow-hidden">
-              <img
-                src="/luxury-streetwear-fashion-editorial-black-and-whit.jpg"
-                alt="Eddie Originals Brand"
-                className="w-full h-full object-cover"
-              />
             </div>
           </div>
         </div>
@@ -407,8 +411,8 @@ export default function HomePage() {
             <p className="text-lg text-black/60">Join the community and see how others style Eddie Originals</p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
               <Link
                 key={i}
                 href="https://instagram.com/eddie_originals_"
