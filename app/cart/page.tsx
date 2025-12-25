@@ -11,7 +11,7 @@ import Link from "next/link"
 export default function CartPage() {
   const { items, removeItem, updateQuantity, total, itemCount } = useCart()
 
-  const shippingCost = total > 50000 ? 0 : 3000
+  const shippingCost = 3000
   const finalTotal = total + shippingCost
 
   if (items.length === 0) {
@@ -122,25 +122,20 @@ export default function CartPage() {
 
             {/* Order Summary */}
             <div className="mt-4 lg:mt-0">
-              <div className="bg-neutral-50 text-black p-6 sm:p-8 rounded-lg sticky top-32 border border-black/5">
+              <div className="bg-black text-white p-6 sm:p-8 rounded-lg sticky top-32">
                 <h2 className="text-2xl font-bold mb-6 tracking-tight">Order Summary</h2>
 
-                <div className="space-y-4 mb-6 pb-6 border-b border-black/10">
+                <div className="space-y-4 mb-6 pb-6 border-b border-white/20">
                   <div className="flex justify-between">
-                    <span className="text-black/60">Subtotal</span>
+                    <span className="text-white/70">Subtotal</span>
                     <span className="font-semibold">₦{total.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-black/60">Shipping</span>
+                    <span className="text-white/70">Shipping</span>
                     <span className="font-semibold">
-                      {shippingCost === 0 ? "FREE" : `₦${shippingCost.toLocaleString()}`}
+                      ₦{shippingCost.toLocaleString()}
                     </span>
                   </div>
-                  {shippingCost > 0 && (
-                    <p className="text-xs text-black/60">
-                      Add ₦{(50000 - total).toLocaleString()} more for free shipping
-                    </p>
-                  )}
                 </div>
 
                 <div className="flex justify-between items-center mb-8 text-xl">
@@ -150,7 +145,7 @@ export default function CartPage() {
 
                 <Button
                   size="lg"
-                  className="w-full bg-black text-white hover:bg-black/90 font-semibold tracking-wide h-14 mb-4"
+                  className="w-full bg-white text-black hover:bg-white/90 font-semibold tracking-wide h-14 mb-4"
                 >
                   PROCEED TO CHECKOUT
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -160,27 +155,27 @@ export default function CartPage() {
                   size="lg"
                   variant="outline"
                   asChild
-                  className="w-full border-black/10 text-black hover:bg-black/5 font-semibold tracking-wide h-14 bg-transparent"
+                  className="w-full border-white/20 text-white hover:bg-white/10 font-semibold tracking-wide h-14 bg-transparent"
                 >
                   <Link href="/shop">CONTINUE SHOPPING</Link>
                 </Button>
 
-                <div className="mt-6 pt-6 border-t border-black/10 space-y-3 text-sm text-black/60">
+                <div className="mt-6 pt-6 border-t border-white/20 space-y-3 text-sm text-white/70">
                   <div className="flex items-center gap-3">
-                    <div className="p-1 bg-white rounded-full border border-black/10">
-                       <Check className="h-3 w-3 text-black" />
+                    <div className="p-1 bg-white/10 rounded-full border border-white/10">
+                       <Check className="h-3 w-3 text-white" />
                     </div>
                     <span>Secure checkout</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="p-1 bg-white rounded-full border border-black/10">
-                       <Check className="h-3 w-3 text-black" />
+                    <div className="p-1 bg-white/10 rounded-full border border-white/10">
+                       <Check className="h-3 w-3 text-white" />
                     </div>
                     <span>No refund policy</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="p-1 bg-white rounded-full border border-black/10">
-                       <Check className="h-3 w-3 text-black" />
+                    <div className="p-1 bg-white/10 rounded-full border border-white/10">
+                       <Check className="h-3 w-3 text-white" />
                     </div>
                     <span>Authentic products guaranteed</span>
                   </div>

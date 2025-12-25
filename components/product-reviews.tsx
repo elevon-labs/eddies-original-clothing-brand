@@ -76,36 +76,36 @@ export function ProductReviews() {
         <div className="md:col-span-8 lg:col-span-9 relative">
           
           {/* Blurred/Mock Content */}
-          <div className="space-y-6 opacity-30 blur-[2px] pointer-events-none select-none" aria-hidden="true">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="border-b border-black/5 pb-6">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-neutral-200 flex items-center justify-center">
-                      <User className="h-5 w-5 text-neutral-400" />
+          <div className="space-y-8 opacity-30 blur-[2px] pointer-events-none select-none" aria-hidden="true">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="border-b border-black/5 pb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-full bg-neutral-200 flex items-center justify-center">
+                      <User className="h-6 w-6 text-neutral-400" />
                     </div>
                     <div>
-                      <div className="h-4 w-24 bg-neutral-200 rounded mb-1"></div>
-                      <div className="flex gap-0.5">
+                      <div className="h-4 w-28 bg-neutral-200 rounded mb-2"></div>
+                      <div className="flex gap-1">
                         {[...Array(5)].map((_, j) => (
-                          <Star key={j} className="h-3 w-3 fill-black text-black" />
+                          <Star key={j} className="h-3.5 w-3.5 fill-black text-black" />
                         ))}
                       </div>
                     </div>
                   </div>
-                  <div className="h-3 w-20 bg-neutral-100 rounded"></div>
+                  <div className="h-4 w-24 bg-neutral-100 rounded"></div>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <div className="h-4 w-full bg-neutral-100 rounded"></div>
-                  <div className="h-4 w-3/4 bg-neutral-100 rounded"></div>
+                  <div className="h-4 w-4/5 bg-neutral-100 rounded"></div>
                 </div>
               </div>
             ))}
           </div>
 
           {/* Locked Overlay */}
-          <div className="absolute inset-0 flex items-center justify-center z-10">
-            <div className="bg-white/90 backdrop-blur-md border border-black/10 p-8 md:p-12 rounded-3xl shadow-xl text-center max-w-md mx-4">
+          <div className="absolute inset-0 flex items-center justify-center z-10 px-4 sm:px-0">
+            <div className="bg-white/90 backdrop-blur-md border border-black/10 p-8 sm:p-10 md:p-12 rounded-3xl shadow-xl text-center w-full max-w-md">
               <div className="w-16 h-16 bg-black/5 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Lock className="h-8 w-8 text-black" />
               </div>
