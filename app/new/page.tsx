@@ -126,13 +126,13 @@ export default function NewArrivalsPage() {
              <p className="text-black/60 mb-8">
                Subscribe to our newsletter to get early access to new arrivals, exclusive releases, and limited edition drops.
              </p>
-             <form className="flex gap-2 max-w-md mx-auto">
+             <form className="flex flex-col sm:flex-row gap-4 sm:gap-3 w-full max-w-md mx-auto items-stretch">
                <input 
                  type="email" 
                  placeholder="Enter your email" 
-                 className="flex-1 h-12 px-4 bg-white border border-black/10 rounded-lg focus:outline-none focus:border-black transition-colors"
+                 className="flex-1 h-12 px-4 bg-white border border-black/10 rounded-lg focus:outline-none focus:border-black transition-colors w-full"
                />
-               <Button size="lg" className="bg-black text-white hover:bg-black/80">
+               <Button size="lg" className="h-12 bg-black text-white hover:bg-black/80 px-8 w-full sm:w-auto">
                  Subscribe
                </Button>
              </form>

@@ -72,15 +72,33 @@ export function Header() {
               </Button>
             </div>
 
-            {/* Mobile Menu Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden text-black hover:bg-black/5"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </Button>
+            {/* Mobile Actions */}
+            <div className="flex items-center gap-2 lg:hidden">
+              <Button
+                size="icon"
+                variant="ghost"
+                asChild
+                className="text-black hover:bg-black/5 relative"
+              >
+                <Link href="/cart">
+                  <ShoppingBag className="h-6 w-6" />
+                  {itemCount > 0 && (
+                    <span className="absolute top-1 right-1 bg-red-600 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                      {itemCount}
+                    </span>
+                  )}
+                </Link>
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-black hover:bg-black/5"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </Button>
+            </div>
           </div>
         </div>
 

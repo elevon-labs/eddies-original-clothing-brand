@@ -8,7 +8,7 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Mail, Phone, MapPin, Instagram, Twitter, Facebook } from "lucide-react"
+import { Mail, Phone, MapPin, Instagram } from "lucide-react"
 import { TikTok } from "@/components/icons"
 import Link from "next/link"
 
@@ -31,10 +31,10 @@ export default function ContactPage() {
     <div className="min-h-screen bg-white text-black">
       <Header />
 
-      <div className="pt-8 pb-20 px-6">
+      <div className="pt-8 pb-20 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
-          <div className="mb-16 text-center">
+          <div className="mb-12 lg:mb-16 text-center">
             <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-4 tracking-tighter">Get In Touch</h1>
             <p className="text-base sm:text-lg text-black/60 max-w-2xl mx-auto">
               Have questions about our products, need styling advice, or want to collaborate? We'd love to hear from
@@ -42,10 +42,10 @@ export default function ContactPage() {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-16">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16">
             {/* Contact Form */}
             <div>
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="flex flex-col gap-6 h-full">
                 <div>
                   <label htmlFor="name" className="block text-sm font-bold tracking-wider mb-2">
                     NAME
@@ -57,7 +57,7 @@ export default function ContactPage() {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="Your name"
                     required
-                    className="h-12"
+                    className="h-12 text-base"
                   />
                 </div>
 
@@ -72,7 +72,7 @@ export default function ContactPage() {
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="your@email.com"
                     required
-                    className="h-12"
+                    className="h-12 text-base"
                   />
                 </div>
 
@@ -87,11 +87,11 @@ export default function ContactPage() {
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                     placeholder="What is this about?"
                     required
-                    className="h-12"
+                    className="h-12 text-base"
                   />
                 </div>
 
-                <div>
+                <div className="flex-1 flex flex-col">
                   <label htmlFor="message" className="block text-sm font-bold tracking-wider mb-2">
                     MESSAGE
                   </label>
@@ -101,8 +101,7 @@ export default function ContactPage() {
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     placeholder="Tell us more..."
                     required
-                    rows={6}
-                    className="resize-none"
+                    className="resize-none flex-1 min-h-[200px] text-base"
                   />
                 </div>
 
@@ -118,7 +117,7 @@ export default function ContactPage() {
 
             {/* Contact Info */}
             <div>
-              <div className="bg-neutral-50 p-8 rounded-lg border border-black/5 mb-8">
+              <div className="bg-neutral-50 p-6 lg:p-8 rounded-lg border border-black/5 mb-8">
                 <h2 className="text-2xl font-bold mb-6 tracking-tight">Contact Information</h2>
 
                 <div className="space-y-6">
@@ -157,7 +156,7 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              <div className="bg-black text-white p-8 rounded-lg">
+              <div className="bg-black text-white p-6 lg:p-8 rounded-lg">
                 <h2 className="text-2xl font-bold mb-4 tracking-tight">Follow Us</h2>
                 <p className="text-white/70 mb-6">
                   Stay connected with us on social media for the latest drops, exclusive content, and community vibes.
@@ -182,26 +181,6 @@ export default function ContactPage() {
                   >
                     <Link href="https://tiktok.com/@eddie_originals" target="_blank">
                       <TikTok className="h-5 w-5" />
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    asChild
-                    className="text-white border-white/20 hover:bg-white/10 bg-transparent"
-                  >
-                    <Link href="https://twitter.com/eddieoriginals" target="_blank">
-                      <Twitter className="h-5 w-5" />
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    asChild
-                    className="text-white border-white/20 hover:bg-white/10 bg-transparent"
-                  >
-                    <Link href="https://facebook.com/eddieoriginals" target="_blank">
-                      <Facebook className="h-5 w-5" />
                     </Link>
                   </Button>
                 </div>

@@ -13,7 +13,7 @@ export default function CollectionsPage() {
       title: "WINTER ESSENTIALS",
       description: "Premium hoodies, jackets, and layering pieces engineered for the cold season. Stay warm without compromising on style.",
       image: "/winter-streetwear-collection-black.jpg",
-      link: "/shop?category=Outerwear", // Linking to filtered shop view
+      link: "/shop?category=Winter%20Essentials", // Linking to filtered shop view
       featured: true
     },
     {
@@ -21,7 +21,7 @@ export default function CollectionsPage() {
       title: "STREET CLASSICS",
       description: "Timeless streetwear staples that never go out of style. The foundation of every modern wardrobe.",
       image: "/classic-streetwear-black-white.jpg",
-      link: "/shop?category=Essentials",
+      link: "/shop?category=Street%20Classics",
       featured: false
     },
     {
@@ -29,13 +29,13 @@ export default function CollectionsPage() {
       title: "PREMIUM OUTERWEAR",
       description: "Luxury jackets and coats crafted for maximum style, comfort, and durability in any condition.",
       image: "/luxury-outerwear-black-streetwear.jpg",
-      link: "/shop?category=Outerwear",
+      link: "/shop?category=Premium%20Outerwear",
       featured: false
     },
      {
       id: "accessories",
       title: "ACCESSORIES",
-      description: "The finishing touches. Hats, bags, and gear to complete your look.",
+      description: "The finishing touches. Socks, caps, and beanies to complete your look.",
       image: "/black-utility-vest-streetwear.jpg", 
       link: "/shop?category=Accessories",
       featured: false
@@ -111,26 +111,7 @@ export default function CollectionsPage() {
         </div>
       </section>
 
-      {/* Archive / Previous Collections (Visual Filler) */}
-      <section className="py-24 bg-neutral-950 text-white px-6">
-        <div className="max-w-7xl mx-auto text-center">
-            <h2 className="text-3xl font-bold tracking-tighter mb-12">From The Archive</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 opacity-50">
-                 <div className="aspect-square bg-neutral-800 flex items-center justify-center border border-white/10 rounded-lg">
-                    <span className="text-sm tracking-widest">SUMMER '24</span>
-                 </div>
-                 <div className="aspect-square bg-neutral-800 flex items-center justify-center border border-white/10 rounded-lg">
-                    <span className="text-sm tracking-widest">SPRING '24</span>
-                 </div>
-                 <div className="aspect-square bg-neutral-800 flex items-center justify-center border border-white/10 rounded-lg">
-                    <span className="text-sm tracking-widest">FALL '23</span>
-                 </div>
-                 <div className="aspect-square bg-neutral-800 flex items-center justify-center border border-white/10 rounded-lg">
-                    <span className="text-sm tracking-widest">CORE</span>
-                 </div>
-            </div>
-        </div>
-      </section>
+
 
       <Footer />
     </div>

@@ -1,11 +1,11 @@
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { ArrowRight, TruckIcon, Shield, Sparkles, Instagram } from "lucide-react"
 import { TikTok } from "@/components/icons"
-import { ProductCard } from "@/components/product-card"
-import { Newsletter } from "@/components/newsletter"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import { Button } from "@/components/ui/button"
+import { Newsletter } from "@/components/newsletter"
+import { ProductCard } from "@/components/product-card"
+import { ArrowRight, Instagram, Shield, Sparkles } from "lucide-react"
 
 export default function HomePage() {
   const featuredProducts = [
@@ -97,19 +97,19 @@ export default function HomePage() {
       title: "WINTER ESSENTIALS",
       description: "Premium hoodies, jackets, and layering pieces for the cold season",
       image: "/winter-streetwear-collection-black.jpg",
-      link: "/collections/winter",
+      link: "/shop?category=Winter%20Essentials",
     },
     {
       title: "STREET CLASSICS",
       description: "Timeless streetwear staples that never go out of style",
       image: "/classic-streetwear-black-white.jpg",
-      link: "/collections/classics",
+      link: "/shop?category=Street%20Classics",
     },
     {
       title: "PREMIUM OUTERWEAR",
       description: "Luxury jackets and coats crafted for maximum style and comfort",
       image: "/luxury-outerwear-black-streetwear.jpg",
-      link: "/collections/outerwear",
+      link: "/shop?category=Premium%20Outerwear",
     },
   ]
 

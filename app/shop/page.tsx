@@ -1,18 +1,35 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, Suspense } from "react"
+import { useSearchParams } from "next/navigation"
 import { ProductCard } from "@/components/product-card"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
-import { Checkbox } from "@/components/ui/checkbox"
 import { SlidersHorizontal, X } from "lucide-react"
 
 export default function ShopPage() {
-  const [selectedCategory, setSelectedCategory] = useState("ALL")
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ShopContent />
+    </Suspense>
+  )
+}
+
+function ShopContent() {
+  const searchParams = useSearchParams()
+  const initialCategory = searchParams.get("category") || "ALL"
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory)
   const [showFilters, setShowFilters] = useState(false)
   const [priceRange, setPriceRange] = useState([0, 200000])
+
+  useEffect(() => {
+    const category = searchParams.get("category")
+    if (category) {
+      setSelectedCategory(category)
+    }
+  }, [searchParams])
 
   const products = [
     {
@@ -21,7 +38,7 @@ export default function ShopPage() {
       price: 45000,
       originalPrice: 65000,
       image: "/black-oversized-tee-luxury-streetwear.jpg",
-      category: "Essentials",
+      category: "Street Classics",
       badge: "NEW",
       rating: 4.8,
       reviews: 124,
@@ -31,7 +48,7 @@ export default function ShopPage() {
       name: "Premium Cargo Pants",
       price: 85000,
       image: "/black-cargo-streetwear.png",
-      category: "Bottoms",
+      category: "Street Classics",
       badge: "TRENDING",
       rating: 4.9,
       reviews: 89,
@@ -42,7 +59,7 @@ export default function ShopPage() {
       price: 95000,
       originalPrice: 120000,
       image: "/black-hoodie-luxury-street-fashion.jpg",
-      category: "Tops",
+      category: "Winter Essentials",
       badge: "SALE",
       rating: 4.7,
       reviews: 156,
@@ -52,7 +69,7 @@ export default function ShopPage() {
       name: "Essential Track Jacket",
       price: 120000,
       image: "/black-track-jacket-modern-streetwear.jpg",
-      category: "Outerwear",
+      category: "Winter Essentials",
       rating: 4.6,
       reviews: 73,
     },
@@ -61,7 +78,7 @@ export default function ShopPage() {
       name: "Urban Bomber Jacket",
       price: 145000,
       image: "/black-bomber-streetwear.png",
-      category: "Outerwear",
+      category: "Premium Outerwear",
       badge: "EXCLUSIVE",
       rating: 4.9,
       reviews: 45,
@@ -71,7 +88,7 @@ export default function ShopPage() {
       name: "Classic Joggers",
       price: 65000,
       image: "/black-joggers-streetwear.jpg",
-      category: "Bottoms",
+      category: "Street Classics",
       rating: 4.5,
       reviews: 198,
     },
@@ -81,7 +98,7 @@ export default function ShopPage() {
       price: 55000,
       originalPrice: 75000,
       image: "/black-crewneck-graphic-streetwear.jpg",
-      category: "Essentials",
+      category: "Street Classics",
       badge: "SALE",
       rating: 4.8,
       reviews: 142,
@@ -91,7 +108,7 @@ export default function ShopPage() {
       name: "Premium Windbreaker",
       price: 135000,
       image: "/black-windbreaker-premium-streetwear.jpg",
-      category: "Outerwear",
+      category: "Premium Outerwear",
       badge: "NEW",
       rating: 4.7,
       reviews: 67,
@@ -101,7 +118,7 @@ export default function ShopPage() {
       name: "Relaxed Fit Tee",
       price: 38000,
       image: "/black-relaxed-tee-streetwear.jpg",
-      category: "Essentials",
+      category: "Street Classics",
       rating: 4.6,
       reviews: 203,
     },
@@ -110,7 +127,7 @@ export default function ShopPage() {
       name: "Wide Leg Pants",
       price: 92000,
       image: "/black-wide-leg-pants-luxury.jpg",
-      category: "Bottoms",
+      category: "Street Classics",
       badge: "TRENDING",
       rating: 4.8,
       reviews: 112,
@@ -121,7 +138,7 @@ export default function ShopPage() {
       price: 105000,
       originalPrice: 130000,
       image: "/black-oversized-hoodie-premium.jpg",
-      category: "Tops",
+      category: "Winter Essentials",
       badge: "SALE",
       rating: 4.9,
       reviews: 176,
@@ -131,14 +148,14 @@ export default function ShopPage() {
       name: "Puffer Jacket",
       price: 165000,
       image: "/black-puffer-jacket-luxury-streetwear.jpg",
-      category: "Outerwear",
+      category: "Winter Essentials",
       badge: "NEW",
       rating: 4.8,
       reviews: 58,
     },
   ]
 
-  const categories = ["ALL", "Essentials", "Tops", "Bottoms", "Outerwear"]
+  const categories = ["ALL", "Winter Essentials", "Street Classics", "Premium Outerwear", "Accessories"]
 
   const filteredProducts = products.filter((product) => {
     const categoryMatch = selectedCategory === "ALL" || product.category === selectedCategory
@@ -163,7 +180,7 @@ export default function ShopPage() {
             <aside className="hidden lg:block w-64 flex-shrink-0">
               <div className="sticky top-32">
                 <div className="mb-8">
-                  <h3 className="font-bold text-sm tracking-wider mb-4">CATEGORIES</h3>
+                  <h3 className="font-bold text-sm tracking-wider mb-4">COLLECTIONS</h3>
                   <div className="space-y-3">
                     {categories.map((cat) => (
                       <button
@@ -195,30 +212,7 @@ export default function ShopPage() {
                   </div>
                 </div>
 
-                <div className="mb-8">
-                  <h3 className="font-bold text-sm tracking-wider mb-4">SIZE</h3>
-                  <div className="space-y-3">
-                    {["XS", "S", "M", "L", "XL", "XXL"].map((size) => (
-                      <label key={size} className="flex items-center gap-2 cursor-pointer">
-                        <Checkbox />
-                        <span className="text-sm">{size}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
 
-                <div className="mb-8">
-                  <h3 className="font-bold text-sm tracking-wider mb-4">COLOR</h3>
-                  <div className="flex gap-2">
-                    {["#000000", "#FFFFFF", "#808080", "#404040"].map((color) => (
-                      <button
-                        key={color}
-                        className="w-10 h-10 rounded-full border-2 border-black/10 hover:border-black transition-colors"
-                        style={{ backgroundColor: color }}
-                      />
-                    ))}
-                  </div>
-                </div>
               </div>
             </aside>
 
@@ -249,7 +243,7 @@ export default function ShopPage() {
                   </div>
 
                   <div className="mb-6">
-                    <h4 className="font-bold text-sm tracking-wider mb-3">CATEGORIES</h4>
+                    <h4 className="font-bold text-sm tracking-wider mb-3">COLLECTIONS</h4>
                     <div className="flex flex-wrap gap-2">
                       {categories.map((cat) => (
                         <Button
@@ -275,7 +269,7 @@ export default function ShopPage() {
                       step={5000}
                       className="mb-4"
                     />
-                    <div className="flex justify-between text-sm text-black/60">
+                    <div className="flex justify-between text-sm text-black font-bold">
                       <span>₦{priceRange[0].toLocaleString()}</span>
                       <span>₦{priceRange[1].toLocaleString()}</span>
                     </div>
