@@ -3,8 +3,6 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -29,8 +27,7 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-white text-black">
-      <Header />
-
+      
       <div className="pt-8 pb-20 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
@@ -190,7 +187,6 @@ export default function ContactPage() {
         </div>
       </div>
 
-      <Footer />
     </div>
   )
 }

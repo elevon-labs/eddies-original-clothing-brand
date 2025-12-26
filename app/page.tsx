@@ -1,7 +1,5 @@
 import Link from "next/link"
 import { TikTok } from "@/components/icons"
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Newsletter } from "@/components/newsletter"
 import { ProductCard } from "@/components/product-card"
@@ -115,7 +113,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white text-black">
-      <Header />
 
       {/* Hero Section */}
       <section className="relative h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-neutral-100 via-white to-neutral-50">
@@ -456,7 +453,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      <Footer />
     </div>
   )
 }

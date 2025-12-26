@@ -3,8 +3,6 @@
 import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { ProductCard } from "@/components/product-card"
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
 import { SlidersHorizontal, X } from "lucide-react"
@@ -165,8 +163,7 @@ function ShopContent() {
 
   return (
     <div className="min-h-screen bg-white text-black">
-      <Header />
-
+      
       <div className="pt-8 pb-20 px-6">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
@@ -305,7 +302,6 @@ function ShopContent() {
         </div>
       </div>
 
-      <Footer />
     </div>
   )
 }

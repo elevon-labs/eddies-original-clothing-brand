@@ -9,11 +9,21 @@ import { eq } from "drizzle-orm"
 import bcrypt from "bcryptjs"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
+  secret: process.env.AUTH_SECRET,
   adapter: DrizzleAdapter(db),
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true,
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
+        },
+      },
     }),
     Credentials({
       name: "Credentials",
@@ -61,10 +71,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     strategy: "jwt",
   },
   callbacks: {
-    jwt({ token, user }) {
+    async jwt({ token, user }) {
       if (user) {
         token.role = user.role as "user" | "admin"
         token.id = user.id as string
+      } else if (token.sub) {
+        // If user is not passed (subsequent requests), refresh role from DB
+        // This handles cases where role is updated manually in DB
+        try {
+          const existingUser = await db.query.users.findFirst({
+            where: eq(users.id, token.sub),
+            columns: {
+              role: true,
+            },
+          })
+
+          if (existingUser?.role) {
+            token.role = existingUser.role as "user" | "admin"
+          }
+        } catch (error) {
+          console.error("Error fetching user role:", error)
+          // Keep existing role in token if DB fetch fails
+        }
       }
       return token
     },

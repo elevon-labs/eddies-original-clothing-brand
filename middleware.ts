@@ -23,12 +23,6 @@ export default auth((req) => {
     if (!isLoggedIn) {
       return NextResponse.redirect(new URL("/account/login", nextUrl))
     }
-    
-    // Check for admin role
-    // @ts-ignore
-    if (req.auth?.user?.role !== "admin") {
-      return NextResponse.redirect(new URL("/", nextUrl))
-    }
   }
 
   return NextResponse.next()

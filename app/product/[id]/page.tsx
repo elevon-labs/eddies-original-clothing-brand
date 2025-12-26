@@ -1,8 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/components/cart-provider"
 import { Heart, Star, Truck, RotateCcw, Shield, ChevronDown, ChevronUp } from "lucide-react"
@@ -106,8 +104,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="min-h-screen bg-white text-black">
-      <Header />
-
+      
       <div className="pt-8 pb-20 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
           {/* Product Details */}
@@ -337,7 +334,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         </div>
       </div>
 
-      <Footer />
     </div>
   )
 }
