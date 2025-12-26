@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Heart, ShoppingBag, Star } from "lucide-react"
 import { useState } from "react"
 import { useCart } from "@/components/cart-provider"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 
 interface Product {
   id: number

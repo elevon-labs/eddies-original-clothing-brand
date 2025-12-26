@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import { Eye, EyeOff } from "lucide-react"
+import { signIn } from "next-auth/react"
 
 export function LoginForm() {
   const [email, setEmail] = useState("")
@@ -23,24 +24,26 @@ export function LoginForm() {
     e.preventDefault()
     setLoading(true)
 
-    // Mock authentication - replace with actual API call
-    setTimeout(() => {
-      if (email === "admin@eddieoriginals.com" && password === "admin123") {
-        localStorage.setItem("admin_token", "mock_token_12345")
-        toast({
-          title: "Welcome back",
-          description: "Successfully logged in to dashboard",
-        })
-        router.push("/admin/dashboard")
-      } else {
-        toast({
-          title: "Invalid credentials",
-          description: "Please check your email and password",
-          variant: "destructive",
-        })
-      }
-      setLoading(false)
-    }, 1000)
+    const result = await signIn("credentials", {
+      redirect: false,
+      email,
+      password,
+    })
+
+    if (result?.error) {
+      toast({
+        title: "Invalid credentials",
+        description: "Please check your email and password",
+        variant: "destructive",
+      })
+    } else {
+      toast({
+        title: "Welcome back",
+        description: "Successfully logged in to dashboard",
+      })
+      router.push("/admin/dashboard")
+    }
+    setLoading(false)
   }
 
   return (

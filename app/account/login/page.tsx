@@ -6,12 +6,89 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { useState, useEffect } from "react"
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff, Loader2 } from "lucide-react"
+import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
+import { useToast } from "@/hooks/use-toast"
+import { resendVerificationEmail } from "@/lib/actions/verify"
 
 import { AccountPolicyInfo } from "@/components/account-policy-info"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [verificationNeeded, setVerificationNeeded] = useState(false)
+  const router = useRouter()
+  const { toast } = useToast()
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setVerificationNeeded(false)
+
+    try {
+      const res = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+      })
+
+      if (res?.error) {
+        if (res.error === "Please verify your email address before logging in.") {
+          setVerificationNeeded(true)
+          toast({
+            title: "Verification Required",
+            description: res.error,
+            variant: "destructive",
+          })
+        } else {
+          toast({
+            title: "Error",
+            description: "Invalid email or password",
+            variant: "destructive",
+          })
+        }
+      } else {
+        router.push("/")
+        router.refresh()
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Something went wrong",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const onResendVerification = async () => {
+    try {
+      const res = await resendVerificationEmail(email)
+      if (res.error) {
+         toast({
+          title: "Error",
+          description: res.error,
+          variant: "destructive",
+        })
+      } else {
+        toast({
+          title: "Email Sent",
+          description: "Check your inbox for the verification link.",
+        })
+        setVerificationNeeded(false)
+      }
+    } catch (error) {
+       toast({
+        title: "Error",
+        description: "Failed to send email.",
+        variant: "destructive",
+      })
+    }
+  }
 
   // Ensure content is visible/centered on mobile mount
   useEffect(() => {
@@ -73,49 +150,69 @@ export default function LoginPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="email" className="text-sm font-semibold text-black ml-1">Email Address</Label>
-                    <Input 
-                      id="email" 
-                      placeholder="name@example.com" 
-                      type="email"
-                      className="h-11 border-black/10 focus-visible:ring-black bg-neutral-50 text-black placeholder:text-black/50 text-base"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between ml-1">
-                      <Label htmlFor="password" className="text-sm font-semibold text-black">Password</Label>
-                      <Link 
-                        href="/account/forgot-password"  
-                        className="text-xs font-medium text-black/60 hover:text-black hover:underline"
-                      >
-                        Forgot password?
-                      </Link>
-                    </div>
-                    <div className="relative">
+                  <form onSubmit={handleLogin} className="space-y-4">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="email" className="text-sm font-semibold text-black ml-1">Email Address</Label>
                       <Input 
-                        id="password" 
-                        type={showPassword ? "text" : "password"}
-                        placeholder="••••••••"
-                        className="h-11 border-black/10 focus-visible:ring-black bg-neutral-50 pr-10 text-black placeholder:text-black/50 text-base"
+                        id="email" 
+                        placeholder="name@example.com" 
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        className="h-11 border-black/10 focus-visible:ring-black bg-neutral-50 text-black placeholder:text-black/50 text-base"
                       />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-black/40 hover:text-black transition-colors"
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </button>
                     </div>
-                  </div>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between ml-1">
+                        <Label htmlFor="password" className="text-sm font-semibold text-black">Password</Label>
+                        <Link 
+                          href="/account/forgot-password"  
+                          className="text-xs font-medium text-black/60 hover:text-black hover:underline"
+                        >
+                          Forgot password?
+                        </Link>
+                      </div>
+                      <div className="relative">
+                        <Input 
+                          id="password" 
+                          type={showPassword ? "text" : "password"}
+                          placeholder="••••••••"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                          className="h-11 border-black/10 focus-visible:ring-black bg-neutral-50 pr-10 text-black placeholder:text-black/50 text-base"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-black/40 hover:text-black transition-colors"
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
 
-                  <Button className="w-full h-11 bg-black hover:bg-black/70 text-white font-medium tracking-wide rounded-lg cursor-pointer transition-colors text-base mt-2">
-                    SIGN IN
-                  </Button>
+                    <Button disabled={loading} className="w-full h-11 bg-black hover:bg-black/70 text-white font-medium tracking-wide rounded-lg cursor-pointer transition-colors text-base mt-2">
+                      {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      SIGN IN
+                    </Button>
+                  </form>
+                  
+                  {verificationNeeded && (
+                    <Button 
+                      variant="outline" 
+                      onClick={onResendVerification}
+                      className="w-full h-11 border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 font-medium rounded-lg text-base"
+                    >
+                      Resend Verification Email
+                    </Button>
+                  )}
+
 
                   <div className="relative py-2">
                     <div className="absolute inset-0 flex items-center">

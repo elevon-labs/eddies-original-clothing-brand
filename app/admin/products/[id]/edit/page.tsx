@@ -1,7 +1,6 @@
 "use client"
 
 import { ProductForm, ProductData } from "@/components/admin/product-form"
-import { AdminLayout } from "@/components/admin/admin-layout"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
@@ -121,47 +120,41 @@ export default function EditProductPage() {
 
   if (loading) {
     return (
-      <AdminLayout>
-        <div className="flex items-center justify-center h-[calc(100vh-200px)]">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-        </div>
-      </AdminLayout>
+      <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
     )
   }
 
   if (!product) {
     return (
-      <AdminLayout>
-        <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)]">
-          <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
-          <p className="text-gray-500 mb-6">The product you are looking for does not exist.</p>
-          <Link href="/admin/products" className="text-sm font-medium underline underline-offset-4">
-            Back to Products
-          </Link>
-        </div>
-      </AdminLayout>
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)]">
+        <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
+        <p className="text-gray-500 mb-6">The product you are looking for does not exist.</p>
+        <Link href="/admin/products" className="text-sm font-medium underline underline-offset-4">
+          Back to Products
+        </Link>
+      </div>
     )
   }
 
   return (
-    <AdminLayout>
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="icon" asChild>
-            <Link href="/admin/products">
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-          </Button>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Edit Product</h1>
-            <p className="text-muted-foreground mt-2 text-sm sm:text-base">
-              Update product details and manage inventory.
-            </p>
-          </div>
+    <div className="space-y-6">
+      <div className="flex items-center gap-4">
+        <Button variant="outline" size="icon" asChild>
+          <Link href="/admin/products">
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+        </Button>
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Edit Product</h1>
+          <p className="text-muted-foreground mt-2 text-sm sm:text-base">
+            Update product details and manage inventory.
+          </p>
         </div>
-        
-        <ProductForm initialData={product} />
       </div>
-    </AdminLayout>
+      
+      <ProductForm initialData={product} />
+    </div>
   )
 }
