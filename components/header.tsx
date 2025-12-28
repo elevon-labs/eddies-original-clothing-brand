@@ -2,8 +2,8 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ShoppingBag, Menu, X, User, LogOut, Settings, UserCircle } from "lucide-react"
-import { useState } from "react"
+import { ShoppingBag, Menu, X, User, LogOut, UserCircle } from "lucide-react"
+import { useState, useEffect } from "react"
 import { useCart } from "./cart-provider"
 import { useSession, signOut } from "next-auth/react"
 import {
@@ -17,9 +17,15 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export function Header() {
+  const [mounted, setMounted] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { itemCount } = useCart()
   const { data: session } = useSession()
+
+  // Wait for client-side hydration to complete
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const userInitials = session?.user?.name
     ? session.user.name
@@ -30,10 +36,25 @@ export function Header() {
         .slice(0, 2)
     : "U"
 
+  if (!mounted) {
+    return (
+      <nav className="relative bg-white border-b border-black/10 shadow-sm">
+        <div className="w-full mx-auto px-6 md:px-12 lg:px-16">
+          <div className="flex items-center justify-between h-24">
+            <Link href="/" className="flex items-center gap-3 md:gap-4 text-base md:text-xl font-bold tracking-tight">
+              <img src="/logo.jpg" alt="Eddie Originals Logo" className="h-9 w-auto md:h-11 rounded-full object-contain" />
+              <span>EDDIE ORIGINALS</span>
+            </Link>
+          </div>
+        </div>
+      </nav>
+    )
+  }
+
   return (
     <>
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-black/10 shadow-sm">
+      <nav className="relative bg-white border-b border-black/10 shadow-sm">
         <div className="w-full mx-auto px-6 md:px-12 lg:px-16">
           <div className="flex items-center justify-between h-24">
             <Link href="/" className="flex items-center gap-3 md:gap-4 text-base md:text-xl font-bold tracking-tight">

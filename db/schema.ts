@@ -14,7 +14,7 @@ import type { AdapterAccount } from "next-auth/adapters"
 
 // --- Auth (NextAuth.js Adapter) ---
 
-export const users = pgTable("user", {
+export const users = pgTable("users", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
@@ -67,6 +67,14 @@ export const verificationTokens = pgTable(
     }),
   })
 )
+
+export const sessions = pgTable("session", {
+  sessionToken: text("sessionToken").primaryKey(),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  expires: timestamp("expires", { mode: "date" }).notNull(),
+})
 
 
 // --- E-commerce Core ---

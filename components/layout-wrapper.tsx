@@ -17,7 +17,8 @@ export function LayoutWrapper({ children, header, footer }: LayoutWrapperProps) 
     pathname === "/account/signup" ||
     pathname === "/account/forgot-password" ||
     pathname.startsWith("/account/verify") ||
-    pathname === "/api-docs"
+    pathname === "/api-docs" ||
+    pathname.startsWith("/admin")
 
   return (
     <>
