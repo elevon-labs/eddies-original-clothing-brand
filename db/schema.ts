@@ -88,6 +88,7 @@ export const products = pgTable("product", {
   isActive: boolean("is_active").default(true),
   stockCount: integer("stock_count").default(0),
   category: text("category"),
+  collection: text("collection"),
   images: json("images").$type<string[]>().default([]),
   sizes: json("sizes").$type<string[]>().default([]),
   colors: json("colors").$type<{ name: string; hex: string }[]>().default([]),

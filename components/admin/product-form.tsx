@@ -54,6 +54,9 @@ export function ProductForm({ initialData }: { initialData?: ProductData }) {
   const [colors, setColors] = useState<{ name: string; hex: string }[]>(initialData?.colors || [])
   const [newColor, setNewColor] = useState({ name: "", hex: "#000000" })
   
+  const [category, setCategory] = useState(initialData?.category || "")
+  const [collection, setCollection] = useState(initialData?.collection || "")
+
   // Advanced Image Management
   const [productImages, setProductImages] = useState<{ id: string; file?: File; preview: string }[]>(initialData?.images || [])
   const [isDragging, setIsDragging] = useState(false)
@@ -134,12 +137,88 @@ export function ProductForm({ initialData }: { initialData?: ProductData }) {
     setColors((prev) => prev.filter((_, i) => i !== index))
   }
 
+  const uploadImage = async (file: File) => {
+    try {
+      // 1. Get signature
+      const timestamp = Math.round((new Date()).getTime() / 1000);
+      const paramsToSign = {
+        timestamp,
+        upload_preset: "eddie-originals",
+        folder: "products",
+      };
+  
+      const signatureRes = await fetch("/api/upload-signature", {
+        method: "POST",
+        body: JSON.stringify({ paramsToSign }),
+      });
+      
+      if (!signatureRes.ok) throw new Error("Failed to get upload signature");
+      const { signature, apiKey, cloudName } = await signatureRes.json();
+  
+      // 2. Upload to Cloudinary
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("api_key", apiKey);
+      formData.append("timestamp", timestamp.toString());
+      formData.append("signature", signature);
+      formData.append("upload_preset", "eddie-originals");
+      formData.append("folder", "products");
+  
+      const uploadRes = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+  
+      if (!uploadRes.ok) throw new Error("Image upload failed");
+      const data = await uploadRes.json();
+      return data.secure_url;
+    } catch (error) {
+      console.error("Upload error:", error);
+      throw error;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
-    // Mock API call
-    setTimeout(() => {
+    try {
+      // Upload images
+      const uploadedImageUrls = await Promise.all(
+        productImages.map(async (img) => {
+          if (img.file) {
+            return await uploadImage(img.file);
+          }
+          return img.preview; // Assume preview is the URL if no file (edit mode)
+        })
+      );
+
+      const productData = {
+        name: (document.getElementById("name") as HTMLInputElement).value,
+        description: (document.getElementById("description") as HTMLTextAreaElement).value,
+        category,
+        collection,
+        prices,
+        stock: (document.getElementById("stock") as HTMLInputElement).value,
+        sizes: selectedSizes,
+        colors,
+        images: uploadedImageUrls
+      };
+
+      const url = initialData?.id ? `/api/products/${initialData.id}` : "/api/products";
+      const method = initialData?.id ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(productData),
+      });
+
+      if (!res.ok) throw new Error("Failed to save product");
+
       toast({
         title: initialData ? "Product updated" : "Product created",
         description: initialData 
@@ -147,7 +226,16 @@ export function ProductForm({ initialData }: { initialData?: ProductData }) {
           : "Your product has been added to the catalog",
       })
       router.push("/admin/products")
-    }, 1500)
+    } catch (error) {
+      console.error("Submit error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save product. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -172,7 +260,7 @@ export function ProductForm({ initialData }: { initialData?: ProductData }) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">Description <span className="text-xs text-neutral-500 font-normal">(Min. 15 words)</span></Label>
                 <Textarea 
                   id="description" 
                   defaultValue={initialData?.description}
@@ -185,7 +273,7 @@ export function ProductForm({ initialData }: { initialData?: ProductData }) {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="category">Category</Label>
-                  <Select defaultValue={initialData?.category.toLowerCase()} required>
+                  <Select value={category} onValueChange={setCategory} required>
                     <SelectTrigger>
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
@@ -201,7 +289,7 @@ export function ProductForm({ initialData }: { initialData?: ProductData }) {
 
                 <div className="space-y-2">
                   <Label htmlFor="collection">Collection</Label>
-                  <Select defaultValue={initialData?.collection.toLowerCase()} required>
+                  <Select value={collection} onValueChange={setCollection} required>
                     <SelectTrigger>
                       <SelectValue placeholder="Select collection" />
                     </SelectTrigger>
