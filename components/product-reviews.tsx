@@ -1,33 +1,231 @@
 "use client"
 
-import { Star, Lock, User } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { useState } from "react"
+import { useToast } from "@/hooks/use-toast"
+import { useSession } from "next-auth/react"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { Star, Lock, ThumbsUp, MessageSquare } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
+// Mock Data
+interface Review {
+  id: number
+  user: {
+    name: string
+    image: string | null
+  }
+  rating: number
+  date: string
+  title: string
+  content: string
+  helpful: number
+}
+
+const MOCK_REVIEWS: Review[] = [
+  {
+    id: 1,
+    user: {
+      name: "Alex Thompson",
+      image: null,
+    },
+    rating: 5,
+    date: "2023-12-15",
+    title: "Absolutely perfect fit",
+    content: "I was skeptical about the sizing at first, but the fit is exactly what I was looking for. The material feels premium and heavy-weight. Definitely worth the price.",
+    helpful: 12,
+  },
+  {
+    id: 2,
+    user: {
+      name: "Sarah Jenkins",
+      image: null,
+    },
+    rating: 5,
+    date: "2023-11-28",
+    title: "My new favorite hoodie",
+    content: "The quality is unmatched. I've washed it multiple times and it hasn't faded or lost its shape. Highly recommend!",
+    helpful: 8,
+  },
+  {
+    id: 3,
+    user: {
+      name: "Marcus Johnson",
+      image: null,
+    },
+    rating: 4,
+    date: "2023-11-10",
+    title: "Great quality, slightly long shipping",
+    content: "The product itself is amazing, 5 stars for that. Taking off one star because shipping took a bit longer than expected, but customer service was helpful.",
+    helpful: 5,
+  },
+]
 
 export function ProductReviews() {
-  // Mock data for the "glimpse"
-  const rating = 4.8
-  const totalReviews = 124
-  const ratingDistribution = [
-    { stars: 5, count: 85 },
-    { stars: 4, count: 25 },
-    { stars: 3, count: 10 },
-    { stars: 2, count: 3 },
-    { stars: 1, count: 1 },
-  ]
+  const { data: session } = useSession()
+  const { toast } = useToast()
+  const [reviews, setReviews] = useState(MOCK_REVIEWS)
+  const [isWriting, setIsWriting] = useState(false)
+  const [newReview, setNewReview] = useState({ rating: 5, title: "", content: "" })
+  const [hoveredStar, setHoveredStar] = useState(0)
+
+  // Stats
+  const averageRating = (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
+  const totalReviews = reviews.length
+  const ratingDistribution = [5, 4, 3, 2, 1].map(stars => ({
+    stars,
+    count: reviews.filter(r => r.rating === stars).length
+  }))
+
+  const handleSubmitReview = (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!newReview.title || !newReview.content) {
+      toast({
+        title: "Missing fields",
+        description: "Please provide a title and review content.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const review = {
+      id: reviews.length + 1,
+      user: {
+        name: session?.user?.name || "Anonymous User",
+        image: session?.user?.image || null,
+      },
+      rating: newReview.rating,
+      date: new Date().toISOString().split('T')[0],
+      title: newReview.title,
+      content: newReview.content,
+      helpful: 0,
+    }
+
+    setReviews([review, ...reviews])
+    setIsWriting(false)
+    setNewReview({ rating: 5, title: "", content: "" })
+    
+    toast({
+      title: "Review submitted",
+      description: "Thank you for sharing your feedback!",
+    })
+  }
+
+  if (!session) {
+    return (
+      <section className="py-12 border-t border-black/10" id="reviews">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold tracking-tight">Reviews ({totalReviews})</h2>
+        </div>
+
+        <div className="grid md:grid-cols-12 gap-12">
+          {/* Rating Summary - Always Visible */}
+          <div className="md:col-span-4 lg:col-span-3 space-y-8">
+            <div className="bg-neutral-50 p-6 rounded-2xl">
+              <div className="flex items-baseline gap-2 mb-2">
+                <span className="text-5xl font-bold tracking-tighter">{averageRating}</span>
+                <span className="text-neutral-500 font-medium">/ 5</span>
+              </div>
+              <div className="flex gap-1 mb-6">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`h-5 w-5 ${
+                      i < Math.round(Number(averageRating)) ? "fill-black text-black" : "text-black/10"
+                    }`}
+                  />
+                ))}
+              </div>
+              <p className="text-sm text-neutral-500 mb-6">
+                Based on {totalReviews} verified reviews
+              </p>
+
+              <div className="space-y-3">
+                {ratingDistribution.map((item) => (
+                  <div key={item.stars} className="flex items-center gap-3 text-xs">
+                    <span className="w-3 font-medium">{item.stars}</span>
+                    <Star className="h-3 w-3 fill-black text-black" />
+                    <div className="flex-1 h-2 bg-neutral-200 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-black rounded-full" 
+                        style={{ width: `${(item.count / totalReviews) * 100}%` }}
+                      />
+                    </div>
+                    <span className="w-8 text-right text-neutral-400">{Math.round((item.count / totalReviews) * 100)}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Locked State */}
+          <div className="md:col-span-8 lg:col-span-9 relative">
+            <div className="space-y-8 opacity-30 blur-[2px] pointer-events-none select-none" aria-hidden="true">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="border-b border-black/5 pb-8">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-full bg-neutral-200"></div>
+                      <div>
+                        <div className="h-4 w-28 bg-neutral-200 rounded mb-2"></div>
+                        <div className="h-3 w-20 bg-neutral-200 rounded"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="h-16 bg-neutral-100 rounded"></div>
+                </div>
+              ))}
+            </div>
+
+            <div className="absolute inset-0 flex items-center justify-center z-10 px-4 sm:px-0">
+              <div className="bg-white/90 backdrop-blur-md border border-black/10 p-8 sm:p-10 md:p-12 rounded-3xl shadow-xl text-center w-full max-w-md">
+                <div className="w-16 h-16 bg-black/5 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Lock className="h-8 w-8 text-black" />
+                </div>
+                <h3 className="text-2xl font-bold mb-3 tracking-tight">Unlock Reviews</h3>
+                <p className="text-neutral-500 mb-8 leading-relaxed">
+                  Join the Eddie Originals community to view full reviews, ratings, and share your own experience.
+                </p>
+                <div className="flex flex-col gap-3">
+                  <Link href="/account/login">
+                    <Button className="w-full h-12 bg-black text-white hover:bg-black/80 rounded-xl text-base">
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link href="/account/signup">
+                    <Button variant="outline" className="w-full h-12 bg-white text-black border-black/20 hover:bg-neutral-50 hover:text-black rounded-xl text-base">
+                      Create Account
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section className="py-12 border-t border-black/10" id="reviews">
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-2xl font-bold tracking-tight">Reviews ({totalReviews})</h2>
+        {!isWriting && (
+          <Button onClick={() => setIsWriting(true)} className="bg-black text-white hover:bg-black/80">
+            Write a Review
+          </Button>
+        )}
       </div>
 
       <div className="grid md:grid-cols-12 gap-12">
-        {/* Rating Summary - Always Visible */}
+        {/* Rating Summary */}
         <div className="md:col-span-4 lg:col-span-3 space-y-8">
-          <div className="bg-neutral-50 p-6 rounded-2xl">
+          <div className="bg-neutral-50 p-6 rounded-2xl sticky top-24">
             <div className="flex items-baseline gap-2 mb-2">
-              <span className="text-5xl font-bold tracking-tighter">{rating}</span>
+              <span className="text-5xl font-bold tracking-tighter">{averageRating}</span>
               <span className="text-neutral-500 font-medium">/ 5</span>
             </div>
             <div className="flex gap-1 mb-6">
@@ -35,7 +233,7 @@ export function ProductReviews() {
                 <Star
                   key={i}
                   className={`h-5 w-5 ${
-                    i < Math.floor(rating) ? "fill-black text-black" : "text-black/10"
+                    i < Math.round(Number(averageRating)) ? "fill-black text-black" : "text-black/10"
                   }`}
                 />
               ))}
@@ -52,90 +250,130 @@ export function ProductReviews() {
                   <div className="flex-1 h-2 bg-neutral-200 rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-black rounded-full" 
-                      style={{ width: `${(item.count / totalReviews) * 100}%` }}
+                      style={{ width: totalReviews > 0 ? `${(item.count / totalReviews) * 100}%` : '0%' }}
                     />
                   </div>
-                  <span className="w-8 text-right text-neutral-400">{Math.round((item.count / totalReviews) * 100)}%</span>
+                  <span className="w-8 text-right text-neutral-400">
+                    {totalReviews > 0 ? Math.round((item.count / totalReviews) * 100) : 0}%
+                  </span>
                 </div>
               ))}
             </div>
           </div>
-
-          <div className="text-center p-6 border border-dashed border-black/20 rounded-2xl">
-            <p className="text-sm font-medium mb-4">Own this product?</p>
-            <Button className="w-full bg-black text-white" disabled>
-              Write a Review
-            </Button>
-            <p className="text-[10px] text-neutral-400 mt-2">
-              Login required to submit reviews
-            </p>
-          </div>
         </div>
 
-        {/* Reviews List - Locked State */}
-        <div className="md:col-span-8 lg:col-span-9 relative">
+        {/* Reviews List & Form */}
+        <div className="md:col-span-8 lg:col-span-9 space-y-8">
           
-          {/* Blurred/Mock Content */}
-          <div className="space-y-8 opacity-30 blur-[2px] pointer-events-none select-none" aria-hidden="true">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="border-b border-black/5 pb-8">
-                <div className="flex items-center justify-between mb-4">
+          {/* Write Review Form */}
+          {isWriting && (
+            <div className="bg-neutral-50 p-6 rounded-2xl border border-black/5 animate-in fade-in slide-in-from-top-4">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="font-bold text-lg">Write your review</h3>
+                <Button variant="ghost" size="sm" onClick={() => setIsWriting(false)}>Cancel</Button>
+              </div>
+              
+              <form onSubmit={handleSubmitReview} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Rating</label>
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        className="focus:outline-none transition-transform hover:scale-110"
+                        onMouseEnter={() => setHoveredStar(star)}
+                        onMouseLeave={() => setHoveredStar(0)}
+                        onClick={() => setNewReview({ ...newReview, rating: star })}
+                      >
+                        <Star
+                          className={`h-8 w-8 ${
+                            star <= (hoveredStar || newReview.rating)
+                              ? "fill-black text-black"
+                              : "text-black/10"
+                          }`}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Title</label>
+                  <Input 
+                    placeholder="Summarize your experience" 
+                    value={newReview.title}
+                    onChange={(e) => setNewReview({ ...newReview, title: e.target.value })}
+                    className="bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Review</label>
+                  <Textarea 
+                    placeholder="What did you like or dislike? How was the fit?" 
+                    value={newReview.content}
+                    onChange={(e) => setNewReview({ ...newReview, content: e.target.value })}
+                    className="min-h-[120px] bg-white"
+                  />
+                </div>
+
+                <Button type="submit" className="w-full bg-black text-white hover:bg-black/80">
+                  Submit Review
+                </Button>
+              </form>
+            </div>
+          )}
+
+          {/* Reviews List */}
+          <div className="space-y-8">
+            {reviews.map((review) => (
+              <div key={review.id} className="border-b border-black/5 pb-8 last:border-0">
+                <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-full bg-neutral-200 flex items-center justify-center">
-                      <User className="h-6 w-6 text-neutral-400" />
-                    </div>
+                    <Avatar className="h-10 w-10 border border-black/10">
+                      <AvatarImage src={review.user.image || undefined} />
+                      <AvatarFallback className="bg-neutral-100 font-medium">
+                        {review.user.name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
                     <div>
-                      <div className="h-4 w-28 bg-neutral-200 rounded mb-2"></div>
-                      <div className="flex gap-1">
-                        {[...Array(5)].map((_, j) => (
-                          <Star key={j} className="h-3.5 w-3.5 fill-black text-black" />
-                        ))}
+                      <h4 className="font-bold text-sm">{review.user.name}</h4>
+                      <div className="flex items-center gap-2">
+                        <div className="flex">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`h-3.5 w-3.5 ${
+                                i < review.rating ? "fill-black text-black" : "text-black/10"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-xs text-neutral-400">• {review.date}</span>
                       </div>
                     </div>
                   </div>
-                  <div className="h-4 w-24 bg-neutral-100 rounded"></div>
                 </div>
-                <div className="space-y-3">
-                  <div className="h-4 w-full bg-neutral-100 rounded"></div>
-                  <div className="h-4 w-4/5 bg-neutral-100 rounded"></div>
+                
+                <h5 className="font-bold mb-2">{review.title}</h5>
+                <p className="text-neutral-600 leading-relaxed text-sm mb-4">
+                  {review.content}
+                </p>
+                
+                <div className="flex items-center gap-4 text-xs text-neutral-500">
+                  <button className="flex items-center gap-1.5 hover:text-black transition-colors">
+                    <ThumbsUp className="h-3.5 w-3.5" />
+                    Helpful ({review.helpful})
+                  </button>
+                  <button className="flex items-center gap-1.5 hover:text-black transition-colors">
+                    <MessageSquare className="h-3.5 w-3.5" />
+                    Comment
+                  </button>
                 </div>
               </div>
             ))}
           </div>
-
-          {/* Locked Overlay */}
-          <div className="absolute inset-0 flex items-center justify-center z-10 px-4 sm:px-0">
-            <div className="bg-white/90 backdrop-blur-md border border-black/10 p-8 sm:p-10 md:p-12 rounded-3xl shadow-xl text-center w-full max-w-md">
-              <div className="w-16 h-16 bg-black/5 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Lock className="h-8 w-8 text-black" />
-              </div>
-              <h3 className="text-2xl font-bold mb-3 tracking-tight">Unlock Reviews</h3>
-              <p className="text-neutral-500 mb-8 leading-relaxed">
-                Join the Eddie Originals community to view full reviews, ratings, and share your own experience.
-              </p>
-              <div className="flex flex-col gap-3">
-                <Link href="/account/login">
-                  <Button className="w-full h-12 bg-black text-white hover:bg-black/80 rounded-xl text-base">
-                    Sign In
-                  </Button>
-                </Link>
-                <div className="relative py-2">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-neutral-200" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white/90 px-2 text-neutral-500">New to Eddie Originals?</span>
-                  </div>
-                </div>
-                <Link href="/account/signup">
-                  <Button variant="outline" className="w-full h-12 bg-white text-black border-black/20 hover:bg-neutral-50 hover:text-black rounded-xl text-base">
-                    Create Account
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-
         </div>
       </div>
     </section>

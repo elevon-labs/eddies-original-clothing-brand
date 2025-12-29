@@ -6,6 +6,8 @@ import { ProductCard } from "@/components/product-card"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
 import { SlidersHorizontal, X } from "lucide-react"
+import { Product } from "@/types"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function ShopPage() {
   return (
@@ -22,6 +24,46 @@ function ShopContent() {
   const [showFilters, setShowFilters] = useState(false)
   const [priceRange, setPriceRange] = useState([0, 200000])
 
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const res = await fetch("/api/products?isActive=true")
+        if (res.ok) {
+          const data = await res.json()
+          // Transform API data to match ProductCard props if needed
+          // API returns: id, name, price, images[], category, etc.
+          // ProductCard expects: id, name, price, image, category, etc.
+          const formatted: Product[] = data.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            price: p.price,
+            originalPrice: p.originalPrice,
+            image: p.images && p.images.length > 0 ? p.images[0] : "/placeholder.svg",
+            images: p.images,
+            category: p.category || "General",
+            badge: p.stockCount < 5 ? "LOW STOCK" : null, // Example logic
+            rating: 5.0, // Default for now
+            reviews: 0,
+            description: p.description,
+            stockCount: p.stockCount,
+            isActive: p.isActive,
+            sizes: p.sizes,
+            colors: p.colors
+          }))
+          setProducts(formatted)
+        }
+      } catch (e) {
+        console.error("Failed to fetch products", e)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchProducts()
+  }, [])
+
   useEffect(() => {
     const category = searchParams.get("category")
     if (category) {
@@ -29,136 +71,12 @@ function ShopContent() {
     }
   }, [searchParams])
 
-  const products = [
-    {
-      id: 1,
-      name: "Signature Oversized Tee",
-      price: 45000,
-      originalPrice: 65000,
-      image: "/black-oversized-tee-luxury-streetwear.jpg",
-      category: "Street Classics",
-      badge: "NEW",
-      rating: 4.8,
-      reviews: 124,
-    },
-    {
-      id: 2,
-      name: "Premium Cargo Pants",
-      price: 85000,
-      image: "/black-cargo-streetwear.png",
-      category: "Street Classics",
-      badge: "TRENDING",
-      rating: 4.9,
-      reviews: 89,
-    },
-    {
-      id: 3,
-      name: "Statement Hoodie",
-      price: 95000,
-      originalPrice: 120000,
-      image: "/black-hoodie-luxury-street-fashion.jpg",
-      category: "Winter Essentials",
-      badge: "SALE",
-      rating: 4.7,
-      reviews: 156,
-    },
-    {
-      id: 4,
-      name: "Essential Track Jacket",
-      price: 120000,
-      image: "/black-track-jacket-modern-streetwear.jpg",
-      category: "Winter Essentials",
-      rating: 4.6,
-      reviews: 73,
-    },
-    {
-      id: 5,
-      name: "Urban Bomber Jacket",
-      price: 145000,
-      image: "/black-bomber-streetwear.png",
-      category: "Premium Outerwear",
-      badge: "EXCLUSIVE",
-      rating: 4.9,
-      reviews: 45,
-    },
-    {
-      id: 6,
-      name: "Classic Joggers",
-      price: 65000,
-      image: "/black-joggers-streetwear.jpg",
-      category: "Street Classics",
-      rating: 4.5,
-      reviews: 198,
-    },
-    {
-      id: 7,
-      name: "Graphic Crewneck",
-      price: 55000,
-      originalPrice: 75000,
-      image: "/black-crewneck-graphic-streetwear.jpg",
-      category: "Street Classics",
-      badge: "SALE",
-      rating: 4.8,
-      reviews: 142,
-    },
-    {
-      id: 8,
-      name: "Premium Windbreaker",
-      price: 135000,
-      image: "/black-windbreaker-premium-streetwear.jpg",
-      category: "Premium Outerwear",
-      badge: "NEW",
-      rating: 4.7,
-      reviews: 67,
-    },
-    {
-      id: 9,
-      name: "Relaxed Fit Tee",
-      price: 38000,
-      image: "/black-relaxed-tee-streetwear.jpg",
-      category: "Street Classics",
-      rating: 4.6,
-      reviews: 203,
-    },
-    {
-      id: 10,
-      name: "Wide Leg Pants",
-      price: 92000,
-      image: "/black-wide-leg-pants-luxury.jpg",
-      category: "Street Classics",
-      badge: "TRENDING",
-      rating: 4.8,
-      reviews: 112,
-    },
-    {
-      id: 11,
-      name: "Oversized Hoodie",
-      price: 105000,
-      originalPrice: 130000,
-      image: "/black-oversized-hoodie-premium.jpg",
-      category: "Winter Essentials",
-      badge: "SALE",
-      rating: 4.9,
-      reviews: 176,
-    },
-    {
-      id: 12,
-      name: "Puffer Jacket",
-      price: 165000,
-      image: "/black-puffer-jacket-luxury-streetwear.jpg",
-      category: "Winter Essentials",
-      badge: "NEW",
-      rating: 4.8,
-      reviews: 58,
-    },
-  ]
-
   const categories = ["ALL", "Winter Essentials", "Street Classics", "Premium Outerwear", "Accessories"]
 
   const filteredProducts = products.filter((product) => {
-    const categoryMatch = selectedCategory === "ALL" || product.category === selectedCategory
-    const priceMatch = product.price >= priceRange[0] && product.price <= priceRange[1]
-    return categoryMatch && priceMatch
+    const matchesCategory = selectedCategory === "ALL" || product.category === selectedCategory
+    const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1]
+    return matchesCategory && matchesPrice
   })
 
   return (
@@ -275,11 +193,25 @@ function ShopContent() {
               )}
 
               {/* Products Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
+              {loading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="flex flex-col space-y-3">
+                      <Skeleton className="h-[400px] w-full rounded-xl" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-[250px]" />
+                        <Skeleton className="h-4 w-[200px]" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+              )}
 
               {/* No Results */}
               {filteredProducts.length === 0 && (

@@ -5,15 +5,54 @@ import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { useToast } from "@/hooks/use-toast"
+import { Loader2 } from "lucide-react"
 
 export function Newsletter() {
   const [email, setEmail] = useState("")
+  const [loading, setLoading] = useState(false)
+  const { toast } = useToast()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("[v0] Newsletter signup:", email)
-    // Handle newsletter signup
-    setEmail("")
+    setLoading(true)
+
+    try {
+      const res = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        if (res.status === 409) {
+          toast({
+            title: "Already Subscribed",
+            description: "You are already on our newsletter list!",
+            variant: "default",
+          })
+          setEmail("")
+          return
+        }
+        throw new Error(data.error || "Failed to subscribe")
+      }
+
+      toast({
+        title: "Success",
+        description: "You have been subscribed to our newsletter.",
+      })
+      setEmail("")
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -36,7 +75,9 @@ export function Newsletter() {
           <Button
             type="submit"
             className="bg-black text-white hover:bg-black/90 h-12 px-8 tracking-wider whitespace-nowrap w-full sm:w-auto"
+            disabled={loading}
           >
+            {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
             SUBSCRIBE
           </Button>
         </form>

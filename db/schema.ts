@@ -80,7 +80,9 @@ export const sessions = pgTable("session", {
 // --- E-commerce Core ---
 
 export const products = pgTable("product", {
-  id: serial("id").primaryKey(),
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
   name: text("name").notNull(),
   description: text("description"),
   price: integer("price").notNull(), // Stored in lowest currency unit (e.g., kobo/cents)
@@ -130,7 +132,7 @@ export const orderItems = pgTable("order_item", {
   orderId: text("order_id")
     .notNull()
     .references(() => orders.id, { onDelete: "cascade" }),
-  productId: integer("product_id").references(() => products.id),
+  productId: text("product_id").references(() => products.id),
   quantity: integer("quantity").notNull(),
   price: integer("price").notNull(), // Snapshot of price at time of order
   productName: text("product_name"), // Snapshot in case product is deleted

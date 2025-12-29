@@ -7,7 +7,7 @@ import { eq } from "drizzle-orm";
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const product = await db.select().from(products).where(eq(products.id, parseInt(id))).limit(1);
+    const product = await db.select().from(products).where(eq(products.id, id)).limit(1);
     if (!product.length) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
@@ -41,7 +41,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       images: body.images,
       isActive: body.isActive,
       updatedAt: new Date(),
-    }).where(eq(products.id, parseInt(id))).returning();
+    }).where(eq(products.id, id)).returning();
 
     return NextResponse.json(updatedProduct[0]);
   } catch (error) {
@@ -70,7 +70,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (body.stock !== undefined) updateData.stockCount = parseInt(body.stock);
     if (body.isActive !== undefined) updateData.isActive = body.isActive;
 
-    const updatedProduct = await db.update(products).set(updateData).where(eq(products.id, parseInt(id))).returning();
+    const updatedProduct = await db.update(products).set(updateData).where(eq(products.id, id)).returning();
 
     return NextResponse.json(updatedProduct[0]);
   } catch (error) {
@@ -87,7 +87,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     }
 
     const { id } = await params;
-    await db.delete(products).where(eq(products.id, parseInt(id)));
+    await db.delete(products).where(eq(products.id, id));
 
     return NextResponse.json({ success: true });
   } catch (error) {

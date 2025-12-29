@@ -1,64 +1,52 @@
-"use client"
-
 import { ProductCard } from "@/components/product-card"
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
+import { db } from "@/db"
+import { products } from "@/db/schema"
+import { and, desc, eq, gt } from "drizzle-orm"
+import { Product } from "@/types"
 
-export default function NewArrivalsPage() {
-  const products = [
-    {
-      id: 1,
-      name: "Signature Oversized Tee",
-      price: 45000,
-      originalPrice: 65000,
-      image: "/black-oversized-tee-luxury-streetwear.jpg",
-      category: "Essentials",
-      badge: "NEW",
-      rating: 4.8,
-      reviews: 124,
-    },
-    {
-      id: 8,
-      name: "Premium Windbreaker",
-      price: 135000,
-      image: "/black-windbreaker-premium-streetwear.jpg",
-      category: "Outerwear",
-      badge: "NEW",
-      rating: 4.7,
-      reviews: 67,
-    },
-    {
-      id: 12,
-      name: "Puffer Jacket",
-      price: 165000,
-      image: "/black-bomber-jacket-luxury-fashion.jpg",
-      category: "Outerwear",
-      badge: "NEW",
-      rating: 4.8,
-      reviews: 58,
-    },
-     {
-      id: 2,
-      name: "Premium Cargo Pants",
-      price: 85000,
-      image: "/black-cargo-streetwear.png",
-      category: "Bottoms",
-      badge: "TRENDING", // Including trending as "new" for volume
-      rating: 4.9,
-      reviews: 89,
-    },
-     {
-      id: 5,
-      name: "Urban Bomber Jacket",
-      price: 145000,
-      image: "/black-bomber-streetwear.png",
-      category: "Outerwear",
-      badge: "EXCLUSIVE", // Including exclusive
-      rating: 4.9,
-      reviews: 45,
-    },
-  ]
+// Force dynamic rendering to ensure fresh data
+export const dynamic = 'force-dynamic'
+
+export default async function NewArrivalsPage() {
+  // Calculate date 3 weeks ago
+  const threeWeeksAgo = new Date()
+  threeWeeksAgo.setDate(threeWeeksAgo.getDate() - 21)
+
+  // Fetch products created in the last 3 weeks
+  const recentProductsData = await db
+    .select()
+    .from(products)
+    .where(
+      and(
+        eq(products.isActive, true),
+        gt(products.createdAt, threeWeeksAgo)
+      )
+    )
+    .orderBy(desc(products.createdAt))
+
+  // Map database results to Product interface
+  const recentProducts: Product[] = recentProductsData.map((p) => ({
+    id: p.id,
+    name: p.name,
+    price: p.price,
+    originalPrice: p.originalPrice,
+    image: p.images && p.images.length > 0 ? p.images[0] : "/placeholder.svg",
+    images: p.images || [],
+    category: p.category,
+    description: p.description,
+    badge: "NEW",
+    rating: 5.0, // Default rating for new items
+    reviews: 0,
+    stockCount: p.stockCount || 0,
+    isActive: p.isActive || false,
+    sizes: p.sizes || [],
+    colors: p.colors || [],
+    createdAt: p.createdAt ? p.createdAt.toISOString() : null,
+  }))
 
   return (
     <div className="min-h-screen bg-white text-black">
@@ -66,10 +54,12 @@ export default function NewArrivalsPage() {
       {/* Hero Section */}
       <section className="relative h-[60vh] flex items-center justify-center overflow-hidden bg-neutral-900 text-white">
         <div className="absolute inset-0 opacity-40">
-           <img 
+           <Image 
             src="/black-hoodie-luxury-street-fashion.jpg" 
             alt="New Arrivals Background" 
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            priority
           />
         </div>
         <div className="relative z-10 text-center max-w-4xl px-6">
@@ -100,42 +90,33 @@ export default function NewArrivalsPage() {
              </Button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-          
-           <div className="mt-16 text-center sm:hidden">
-             <Button size="lg" asChild className="w-full bg-black text-white hover:bg-black/70">
+          {recentProducts.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
+              {recentProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-20">
+              <h3 className="text-xl font-medium mb-4">No new arrivals in the last 3 weeks.</h3>
+              <p className="text-neutral-500 mb-8">Check back soon for fresh drops!</p>
+              <Button asChild className="bg-black text-white hover:bg-black/80">
                 <Link href="/shop">
-                  View All Products
+                  Browse All Products
+                </Link>
+              </Button>
+            </div>
+          )}
+          
+          <div className="mt-12 flex justify-center sm:hidden">
+             <Button asChild className="bg-black text-white hover:bg-black/80 w-full">
+                <Link href="/shop">
+                  View All Products <ArrowRight className="ml-2 h-4 w-4"/>
                 </Link>
              </Button>
           </div>
         </div>
       </div>
-      
-      {/* Newsletter / Drop Alert */}
-      <section className="py-24 bg-neutral-50 border-t border-black/5">
-        <div className="max-w-xl mx-auto px-6 text-center">
-             <h2 className="text-3xl font-bold tracking-tighter mb-4">Never Miss a Drop</h2>
-             <p className="text-black/60 mb-8">
-               Subscribe to our newsletter to get early access to new arrivals, exclusive releases, and limited edition drops.
-             </p>
-             <form className="flex flex-col sm:flex-row gap-4 sm:gap-3 w-full max-w-md mx-auto items-stretch">
-               <input 
-                 type="email" 
-                 placeholder="Enter your email" 
-                 className="flex-1 h-12 px-4 bg-white border border-black/10 rounded-lg focus:outline-none focus:border-black transition-colors w-full"
-               />
-               <Button size="lg" className="h-12 bg-black text-white hover:bg-black/80 px-8 w-full sm:w-auto">
-                 Subscribe
-               </Button>
-             </form>
-        </div>
-      </section>
-
     </div>
   )
 }

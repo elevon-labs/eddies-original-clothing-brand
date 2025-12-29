@@ -39,7 +39,7 @@ import { Edit, Trash2, Search, ArrowUpDown, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 type Product = {
-  id: number
+  id: string
   name: string
   image: string
   price: number
@@ -138,7 +138,7 @@ export function ProductsList() {
     setCurrentPage(page)
   }
 
-  const toggleVisibility = async (id: number, currentStatus: boolean) => {
+  const toggleVisibility = async (id: string, currentStatus: boolean) => {
     // Optimistic update
     setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, visible: !p.visible } : p)))
     
@@ -167,7 +167,7 @@ export function ProductsList() {
     }
   }
 
-  const deleteProduct = async (id: number, name: string) => {
+  const deleteProduct = async (id: string, name: string) => {
     try {
       const res = await fetch(`/api/products/${id}`, {
         method: "DELETE",

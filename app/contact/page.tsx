@@ -6,11 +6,14 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Mail, Phone, MapPin, Instagram } from "lucide-react"
+import { Mail, Phone, MapPin, Instagram, Loader2 } from "lucide-react"
 import { TikTok } from "@/components/icons"
 import Link from "next/link"
+import { useToast } from "@/hooks/use-toast"
 
 export default function ContactPage() {
+  const { toast } = useToast()
+  const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -18,11 +21,35 @@ export default function ContactPage() {
     message: "",
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("[v0] Contact form submitted:", formData)
-    alert("Thank you for your message! We'll get back to you soon.")
-    setFormData({ name: "", email: "", subject: "", message: "" })
+    setLoading(true)
+    
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      })
+      
+      const data = await res.json()
+      
+      if (!res.ok) throw new Error(data.error || "Failed to submit")
+      
+      toast({
+        title: "Message sent",
+        description: "Thank you for contacting us. We'll get back to you soon.",
+      })
+      setFormData({ name: "", email: "", subject: "", message: "" })
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -106,7 +133,9 @@ export default function ContactPage() {
                   type="submit"
                   size="lg"
                   className="w-full bg-black text-white hover:bg-black/90 font-semibold tracking-wide h-14"
+                  disabled={loading}
                 >
+                  {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   SEND MESSAGE
                 </Button>
               </form>

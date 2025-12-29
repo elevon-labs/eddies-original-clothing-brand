@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -28,52 +28,24 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Mail, Check, Search } from "lucide-react"
+import { Mail, Check, Search, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
-const initialMessages = [
-  {
-    id: "1",
-    name: "John Doe",
-    email: "john@example.com",
-    subject: "Order Status Inquiry",
-    message: "Hi, I'd like to check on the status of my order #1234. When will it be shipped?",
-    date: "2024-01-15",
-    read: false,
-  },
-  {
-    id: "2",
-    name: "Sarah Smith",
-    email: "sarah@example.com",
-    subject: "Product Size Question",
-    message: "Do the hoodies run true to size? I'm between M and L.",
-    date: "2024-01-15",
-    read: false,
-  },
-  {
-    id: "3",
-    name: "Michael Jones",
-    email: "michael@example.com",
-    subject: "Wholesale Inquiry",
-    message: "I'm interested in purchasing bulk quantities for my store. Can we discuss wholesale pricing?",
-    date: "2024-01-14",
-    read: false,
-  },
-  {
-    id: "4",
-    name: "Emma Wilson",
-    email: "emma@example.com",
-    subject: "Return Request",
-    message: "I received the wrong size and would like to exchange it. What's the process?",
-    date: "2024-01-13",
-    read: true,
-  },
-]
+interface Message {
+  id: string
+  name: string
+  email: string
+  subject: string
+  message: string
+  date: string
+  read: boolean
+}
 
 export function InboxList() {
-  const [messages, setMessages] = useState(initialMessages)
-  const [selectedMessage, setSelectedMessage] = useState<(typeof initialMessages)[0] | null>(null)
-  const [messageToMarkRead, setMessageToMarkRead] = useState<(typeof initialMessages)[0] | null>(null)
+  const [messages, setMessages] = useState<Message[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null)
+  const [messageToMarkRead, setMessageToMarkRead] = useState<Message | null>(null)
   
   // Search, Filter, and Pagination State
   const [searchQuery, setSearchQuery] = useState("")
@@ -83,15 +55,65 @@ export function InboxList() {
 
   const { toast } = useToast()
 
-  const markAsRead = (id: string) => {
-    setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, read: true } : m)))
-    if (selectedMessage?.id === id) {
-      setSelectedMessage(null)
+  const fetchMessages = async () => {
+    try {
+      const res = await fetch("/api/admin/messages")
+      if (!res.ok) throw new Error("Failed to fetch messages")
+      const data = await res.json()
+      
+      const formattedMessages = data.map((msg: any) => ({
+        id: msg.id.toString(),
+        name: msg.name,
+        email: msg.email,
+        subject: msg.subject || "No Subject",
+        message: msg.message,
+        date: msg.createdAt,
+        read: msg.isRead,
+      }))
+      
+      setMessages(formattedMessages)
+    } catch (error) {
+      console.error("Error fetching messages:", error)
+      toast({
+        title: "Error",
+        description: "Failed to load messages",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
     }
-    toast({
-      title: "Marked as read",
-      description: "Message has been archived",
-    })
+  }
+
+  useEffect(() => {
+    fetchMessages()
+  }, [])
+
+  const markAsRead = async (id: string) => {
+    try {
+      const res = await fetch(`/api/admin/messages/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isRead: true }),
+      })
+      
+      if (!res.ok) throw new Error("Failed to update message")
+
+      setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, read: true } : m)))
+      if (selectedMessage?.id === id) {
+        setSelectedMessage(null)
+      }
+      toast({
+        title: "Marked as read",
+        description: "Message has been archived",
+      })
+    } catch (error) {
+      console.error("Error marking message as read:", error)
+      toast({
+        title: "Error",
+        description: "Failed to update message status",
+        variant: "destructive",
+      })
+    }
   }
 
   // Filter Logic
@@ -137,6 +159,14 @@ export function InboxList() {
   }
 
   const unreadCount = messages.filter((m) => !m.read).length
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-neutral-400" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ShoppingBag, Menu, X, User, LogOut, UserCircle } from "lucide-react"
@@ -42,7 +43,14 @@ export function Header() {
         <div className="w-full mx-auto px-6 md:px-12 lg:px-16">
           <div className="flex items-center justify-between h-24">
             <Link href="/" className="flex items-center gap-3 md:gap-4 text-base md:text-xl font-bold tracking-tight">
-              <img src="/logo.jpg" alt="Eddie Originals Logo" className="h-9 w-auto md:h-11 rounded-full object-contain" />
+              <div className="relative h-9 w-9 md:h-11 md:w-11 rounded-full overflow-hidden">
+                <Image 
+                  src="/logo.jpg" 
+                  alt="Eddie Originals Logo" 
+                  fill
+                  className="object-contain"
+                />
+              </div>
               <span>EDDIE ORIGINALS</span>
             </Link>
           </div>
@@ -58,7 +66,14 @@ export function Header() {
         <div className="w-full mx-auto px-6 md:px-12 lg:px-16">
           <div className="flex items-center justify-between h-24">
             <Link href="/" className="flex items-center gap-3 md:gap-4 text-base md:text-xl font-bold tracking-tight">
-              <img src="/logo.jpg" alt="Eddie Originals Logo" className="h-9 w-auto md:h-11 rounded-full object-contain" />
+              <div className="relative h-9 w-9 md:h-11 md:w-11 rounded-full overflow-hidden">
+                <Image 
+                  src="/logo.jpg" 
+                  alt="Eddie Originals Logo" 
+                  fill
+                  className="object-contain"
+                />
+              </div>
               <span>EDDIE ORIGINALS</span>
             </Link>
 
@@ -191,83 +206,108 @@ export function Header() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-black/10 bg-white text-black">
-            <div className="px-6 py-6 space-y-4">
-              <Link
-                href="/shop"
-                className="block text-sm font-medium tracking-wide py-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                SHOP ALL
+          <div className="fixed inset-0 z-50 bg-white text-black lg:hidden animate-in slide-in-from-right-full duration-300">
+            <div className="flex items-center justify-between h-24 px-6 border-b border-black/10">
+              <Link href="/" className="flex items-center gap-3 text-base font-bold tracking-tight" onClick={() => setMobileMenuOpen(false)}>
+                <div className="relative h-9 w-9 rounded-full overflow-hidden">
+                  <Image 
+                    src="/logo.jpg" 
+                    alt="Eddie Originals Logo" 
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+                <span>EDDIE ORIGINALS</span>
               </Link>
-              <Link
-                href="/collections"
-                className="block text-sm font-medium tracking-wide py-2"
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => setMobileMenuOpen(false)}
+                className="text-black hover:bg-black/5"
               >
-                COLLECTIONS
-              </Link>
-              <Link
-                href="/new"
-                className="block text-sm font-medium tracking-wide py-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                NEW ARRIVALS
-              </Link>
-              {!session && (
-                <>
-                  <Link
-                    href="/about"
-                    className="block text-sm font-medium tracking-wide py-2"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    ABOUT
-                  </Link>
-                  <Link
-                    href="/contact"
-                    className="block text-sm font-medium tracking-wide py-2"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    CONTACT
-                  </Link>
-                </>
-              )}
-              <div className="pt-4 border-t border-black/10 flex flex-col gap-2">
+                <X className="h-6 w-6" />
+              </Button>
+            </div>
+            
+            <div className="px-6 py-6 space-y-6 overflow-y-auto h-[calc(100vh-96px)]">
+              <div className="space-y-4">
+                <Link
+                  href="/shop"
+                  className="block text-lg font-medium tracking-tight py-2 border-b border-black/5"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  SHOP ALL
+                </Link>
+                <Link
+                  href="/collections"
+                  className="block text-lg font-medium tracking-tight py-2 border-b border-black/5"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  COLLECTIONS
+                </Link>
+                <Link
+                  href="/new"
+                  className="block text-lg font-medium tracking-tight py-2 border-b border-black/5"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  NEW ARRIVALS
+                </Link>
+                {!session && (
+                  <>
+                    <Link
+                      href="/about"
+                      className="block text-lg font-medium tracking-tight py-2 border-b border-black/5"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      ABOUT
+                    </Link>
+                    <Link
+                      href="/contact"
+                      className="block text-lg font-medium tracking-tight py-2 border-b border-black/5"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      CONTACT
+                    </Link>
+                  </>
+                )}
+              </div>
+
+              <div className="pt-4 flex flex-col gap-4">
                 {session ? (
-                   <div className="space-y-2">
-                      <div className="flex items-center gap-3 py-2">
-                        <Avatar className="h-8 w-8 border border-black/10">
+                   <div className="space-y-4">
+                      <div className="flex items-center gap-4 py-2 bg-neutral-50 p-4 rounded-lg">
+                        <Avatar className="h-10 w-10 border border-black/10">
                           <AvatarImage src={session.user?.image || ""} alt={session.user?.name || ""} />
                           <AvatarFallback className="bg-black text-white text-xs">{userInitials}</AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col">
-                          <span className="text-sm font-medium">{session.user?.name}</span>
+                          <span className="text-base font-semibold">{session.user?.name}</span>
                           <span className="text-xs text-black/60">{session.user?.email}</span>
                         </div>
                       </div>
-                      <Button variant="outline" size="sm" asChild className="w-full justify-start bg-transparent text-black border-black/10">
-                        <Link href="/account">
-                          <UserCircle className="h-4 w-4 mr-2" />
+                      <Button variant="outline" size="lg" asChild className="w-full justify-start bg-transparent text-black border-black/10 h-12">
+                        <Link href="/account" onClick={() => setMobileMenuOpen(false)}>
+                          <UserCircle className="h-5 w-5 mr-3" />
                           Profile
                         </Link>
                       </Button>
-                      <Button variant="outline" size="sm" onClick={() => signOut({ callbackUrl: "/" })} className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200">
-                        <LogOut className="h-4 w-4 mr-2" />
+                      <Button variant="outline" size="lg" onClick={() => { signOut({ callbackUrl: "/" }); setMobileMenuOpen(false); }} className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 h-12">
+                        <LogOut className="h-5 w-5 mr-3" />
                         Log out
                       </Button>
                    </div>
                 ) : (
-                  <Button variant="outline" size="sm" asChild className="w-full bg-transparent text-black border-black/10">
-                    <Link href="/account/login">
-                      <User className="h-4 w-4 mr-2" />
+                  <Button variant="outline" size="lg" asChild className="w-full bg-transparent text-black border-black/10 h-12">
+                    <Link href="/account/login" onClick={() => setMobileMenuOpen(false)}>
+                      <User className="h-5 w-5 mr-3" />
                       ACCOUNT
                     </Link>
                   </Button>
                 )}
                 
-                <Button size="sm" asChild className="w-full bg-black text-white mt-2">
-                  <Link href="/cart" className="relative">
-                    <ShoppingBag className="h-4 w-4 mr-2" />
+                <Button size="lg" asChild className="w-full bg-black text-white h-12">
+                  <Link href="/cart" className="relative" onClick={() => setMobileMenuOpen(false)}>
+                    <ShoppingBag className="h-5 w-5 mr-3" />
                     CART ({itemCount})
                   </Link>
                 </Button>

@@ -9,18 +9,7 @@ import { Heart, ShoppingBag, Star } from "lucide-react"
 import { useState } from "react"
 import { useCart } from "@/components/cart-provider"
 import { useToast } from "@/hooks/use-toast"
-
-interface Product {
-  id: number
-  name: string
-  price: number
-  originalPrice?: number
-  image: string
-  category: string
-  badge?: string
-  rating?: number
-  reviews?: number
-}
+import { Product } from "@/types"
 
 export function ProductCard({ product }: { product: Product }) {
   const [isWishlisted, setIsWishlisted] = useState(false)

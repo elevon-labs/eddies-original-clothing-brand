@@ -4,8 +4,23 @@ import { db } from "@/db";
 import { products } from "@/db/schema";
 import { desc } from "drizzle-orm";
 
-export async function GET() {
+import { eq } from "drizzle-orm";
+
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const isActive = searchParams.get("isActive");
+
+    let query = db.select().from(products).orderBy(desc(products.createdAt));
+
+    if (isActive === "true") {
+      // @ts-ignore - Drizzle types might complain about where on a select result but it works if chained correctly, 
+      // but simpler to use query builder properly.
+      // Let's rewrite slightly for better type safety
+      const activeProducts = await db.select().from(products).where(eq(products.isActive, true)).orderBy(desc(products.createdAt));
+      return NextResponse.json(activeProducts);
+    }
+
     const allProducts = await db.select().from(products).orderBy(desc(products.createdAt));
     return NextResponse.json(allProducts);
   } catch (error) {
