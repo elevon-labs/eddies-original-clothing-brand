@@ -1,12 +1,18 @@
 import type { Metadata } from "next"
 import { NewsletterList } from "@/components/admin/newsletter-list"
+import { db } from "@/db"
+import { newsletterSubscribers } from "@/db/schema"
+import { count } from "drizzle-orm"
 
 export const metadata: Metadata = {
   title: "Newsletter | Eddie Originals Admin",
   description: "Manage newsletter subscribers",
 }
 
-export default function AdminNewsletterPage() {
+export default async function AdminNewsletterPage() {
+  const [subscriberCountData] = await db.select({ value: count() }).from(newsletterSubscribers)
+  const subscriberCount = subscriberCountData.value
+
   return (
     <div className="space-y-6">
       <div>
@@ -14,7 +20,7 @@ export default function AdminNewsletterPage() {
         <p className="text-muted-foreground mt-2">Export subscribers and manage your email list</p>
       </div>
 
-      <NewsletterList />
+      <NewsletterList subscriberCount={subscriberCount} />
     </div>
   )
 }

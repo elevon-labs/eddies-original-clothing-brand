@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Download, ExternalLink, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
-export function NewsletterList() {
+export function NewsletterList({ subscriberCount }: { subscriberCount: number }) {
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
 
@@ -76,8 +76,7 @@ export function NewsletterList() {
           <CardDescription>Current audience size</CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Note: In a real app we might want to fetch the count here, or assume the dashboard metrics handle it */}
-          <div className="text-4xl font-bold">--</div>
+          <div className="text-4xl font-bold">{subscriberCount.toLocaleString()}</div>
           <p className="text-sm text-muted-foreground mt-2">Check dashboard for live count</p>
         </CardContent>
       </Card>
