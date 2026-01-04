@@ -100,8 +100,26 @@ export const products = pgTable("product", {
   images: json("images").$type<string[]>().default([]),
   sizes: json("sizes").$type<string[]>().default([]),
   colors: json("colors").$type<{ name: string; hex: string }[]>().default([]),
+  reviewCount: integer("review_count").default(0),
+  averageRating: integer("average_rating").default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+})
+
+export const productReviews = pgTable("product_review", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  productId: text("product_id")
+    .notNull()
+    .references(() => products.id, { onDelete: "cascade" }),
+  rating: integer("rating").notNull(),
+  title: text("title"),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 })
 
 export const orders = pgTable("order", {
