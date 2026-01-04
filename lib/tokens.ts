@@ -1,5 +1,5 @@
 import { db } from "@/db"
-import { verificationTokens } from "@/db/schema"
+import { verificationTokens, passwordResetTokens } from "@/db/schema"
 import { eq } from "drizzle-orm"
 import { v4 as uuidv4 } from "uuid"
 
@@ -45,6 +45,54 @@ export const getVerificationTokenByEmail = async (email: string) => {
       where: eq(verificationTokens.identifier, email),
     })
     return verificationToken
+  } catch {
+    return null
+  }
+}
+
+export const generatePasswordResetToken = async (email: string) => {
+  const token = uuidv4()
+  const expires = new Date(new Date().getTime() + 3600 * 1000) // 1 hour
+
+  const existingToken = await db.query.passwordResetTokens.findFirst({
+    where: eq(passwordResetTokens.identifier, email),
+  })
+
+  if (existingToken) {
+    await db
+      .delete(passwordResetTokens)
+      .where(eq(passwordResetTokens.identifier, email))
+  }
+
+  const passwordResetToken = await db
+    .insert(passwordResetTokens)
+    .values({
+      identifier: email,
+      token,
+      expires,
+    })
+    .returning()
+
+  return passwordResetToken[0]
+}
+
+export const getPasswordResetTokenByToken = async (token: string) => {
+  try {
+    const passwordResetToken = await db.query.passwordResetTokens.findFirst({
+      where: eq(passwordResetTokens.token, token),
+    })
+    return passwordResetToken
+  } catch {
+    return null
+  }
+}
+
+export const getPasswordResetTokenByEmail = async (email: string) => {
+  try {
+    const passwordResetToken = await db.query.passwordResetTokens.findFirst({
+      where: eq(passwordResetTokens.identifier, email),
+    })
+    return passwordResetToken
   } catch {
     return null
   }

@@ -1,34 +1,26 @@
 import {
+  boolean,
+  timestamp,
   pgTable,
   text,
-  timestamp,
-  boolean,
+  primaryKey,
   integer,
-  uuid,
   serial,
   json,
-  primaryKey,
-  index,
 } from "drizzle-orm/pg-core"
-import type { AdapterAccount } from "next-auth/adapters"
+import type { AdapterAccountType } from "next-auth/adapters"
 
-// --- Auth (NextAuth.js Adapter) ---
-
-export const users = pgTable("users", {
+export const users = pgTable("user", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   name: text("name"),
-  email: text("email").notNull().unique(),
+  email: text("email").notNull(),
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
-  password: text("password"), // For Credentials provider
-  role: text("role").$type<"user" | "admin">().default("user"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-}, (table) => ({
-  // Users table doesn't need a category index
-}))
+  password: text("password"),
+  role: text("role").default("user"),
+})
 
 export const accounts = pgTable(
   "account",
@@ -36,7 +28,7 @@ export const accounts = pgTable(
     userId: text("userId")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    type: text("type").$type<AdapterAccount["type"]>().notNull(),
+    type: text("type").$type<AdapterAccountType>().notNull(),
     provider: text("provider").notNull(),
     providerAccountId: text("providerAccountId").notNull(),
     refresh_token: text("refresh_token"),
@@ -64,6 +56,20 @@ export const verificationTokens = pgTable(
   (verificationToken) => ({
     compositePk: primaryKey({
       columns: [verificationToken.identifier, verificationToken.token],
+    }),
+  })
+)
+
+export const passwordResetTokens = pgTable(
+  "passwordResetToken",
+  {
+    identifier: text("identifier").notNull(),
+    token: text("token").notNull(),
+    expires: timestamp("expires", { mode: "date" }).notNull(),
+  },
+  (t) => ({
+    compositePk: primaryKey({
+      columns: [t.identifier, t.token],
     }),
   })
 )
@@ -96,46 +102,40 @@ export const products = pgTable("product", {
   colors: json("colors").$type<{ name: string; hex: string }[]>().default([]),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-}, (table) => ({
-  categoryIdx: index("product_category_idx").on(table.category),
-}))
-
-export const collections = pgTable("collection", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  slug: text("slug").notNull().unique(),
-  description: text("description"),
-  image: text("image"),
-  isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").defaultNow(),
 })
 
 export const orders = pgTable("order", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  userId: text("user_id").references(() => users.id), // Can be null for guest checkout (if allowed)
-  guestEmail: text("guest_email"), // For guest checkout
-  status: text("status")
-    .$type<"PENDING" | "PAID" | "SHIPPED" | "DELIVERED" | "CANCELLED">()
-    .default("PENDING"),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
+  status: text("status").default("pending"), // pending, paid, shipped, delivered, cancelled
   total: integer("total").notNull(),
-  paymentReference: text("payment_reference"), // Paystack reference
+  currency: text("currency").default("NGN"),
+  stripePaymentIntentId: text("stripe_payment_intent_id"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-}, (table) => ({
-  userIdIdx: index("order_user_id_idx").on(table.userId),
-}))
+  
+  // Guest checkout support
+  guestName: text("guest_name"),
+  guestEmail: text("guest_email"),
+  
+  // Shipping Address Snapshot (so order history doesn't change if user updates address)
+  shippingAddress: json("shipping_address").notNull(),
+})
 
 export const orderItems = pgTable("order_item", {
-  id: serial("id").primaryKey(),
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
   orderId: text("order_id")
     .notNull()
     .references(() => orders.id, { onDelete: "cascade" }),
-  productId: text("product_id").references(() => products.id),
+  productId: text("product_id")
+    .references(() => products.id, { onDelete: "set null" }), // Keep record even if product deleted
+  productName: text("product_name").notNull(), // Snapshot
   quantity: integer("quantity").notNull(),
-  price: integer("price").notNull(), // Snapshot of price at time of order
-  productName: text("product_name"), // Snapshot in case product is deleted
+  price: integer("price").notNull(), // Snapshot of price at time of purchase
   selectedSize: text("selected_size"),
   selectedColor: text("selected_color"),
 })

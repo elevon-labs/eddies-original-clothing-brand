@@ -15,6 +15,7 @@ export function LayoutWrapper({ children, header, footer }: LayoutWrapperProps) 
   const isHiddenPage =
     pathname === "/account/login" ||
     pathname === "/account/signup" ||
+    pathname === "/account/check-email" ||
     pathname === "/account/forgot-password" ||
     pathname.startsWith("/account/verify") ||
     pathname === "/api-docs" ||

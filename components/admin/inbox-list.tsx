@@ -28,7 +28,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Mail, Check, Search, Loader2 } from "lucide-react"
+import { Mail, Check, Search, Loader2, Trash2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 interface Message {
@@ -46,6 +46,8 @@ export function InboxList() {
   const [loading, setLoading] = useState(true)
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null)
   const [messageToMarkRead, setMessageToMarkRead] = useState<Message | null>(null)
+  const [messageToDelete, setMessageToDelete] = useState<Message | null>(null)
+  const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false)
   
   // Search, Filter, and Pagination State
   const [searchQuery, setSearchQuery] = useState("")
@@ -111,6 +113,55 @@ export function InboxList() {
       toast({
         title: "Error",
         description: "Failed to update message status",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const deleteMessage = async (id: string) => {
+    try {
+      const res = await fetch(`/api/admin/messages/${id}`, {
+        method: "DELETE",
+      })
+      
+      if (!res.ok) throw new Error("Failed to delete message")
+
+      setMessages((prev) => prev.filter((m) => m.id !== id))
+      if (selectedMessage?.id === id) {
+        setSelectedMessage(null)
+      }
+      toast({
+        title: "Message deleted",
+        description: "The message has been permanently removed",
+      })
+    } catch (error) {
+      console.error("Error deleting message:", error)
+      toast({
+        title: "Error",
+        description: "Failed to delete message",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const deleteAllArchived = async () => {
+    try {
+      const res = await fetch("/api/admin/messages?type=all_archived", {
+        method: "DELETE",
+      })
+      
+      if (!res.ok) throw new Error("Failed to delete messages")
+
+      setMessages((prev) => prev.filter((m) => !m.read))
+      toast({
+        title: "Archived messages deleted",
+        description: "All archived messages have been permanently removed",
+      })
+    } catch (error) {
+      console.error("Error deleting archived messages:", error)
+      toast({
+        title: "Error",
+        description: "Failed to delete archived messages",
         variant: "destructive",
       })
     }
@@ -192,6 +243,16 @@ export function InboxList() {
             {unreadCount} unread message{unreadCount !== 1 ? "s" : ""}
           </p>
         </div>
+        {statusFilter === "read" && messages.some(m => m.read) && (
+          <Button 
+            size="sm" 
+            className="h-8 bg-red-600 hover:bg-red-700 text-white"
+            onClick={() => setShowDeleteAllDialog(true)}
+          >
+            <Trash2 className="mr-2 h-3.5 w-3.5" />
+            Delete All Archived
+          </Button>
+        )}
       </div>
 
       <div className="grid gap-4">
@@ -278,6 +339,20 @@ export function InboxList() {
                 >
                   <Check className="mr-2 h-3.5 w-3.5" />
                   Mark Read
+                </Button>
+              )}
+              {message.read && (
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  className="flex-1 border-neutral-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 h-9 text-neutral-600"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setMessageToDelete(message)
+                  }}
+                >
+                  <Trash2 className="mr-2 h-3.5 w-3.5" />
+                  Delete
                 </Button>
               )}
             </div>
@@ -381,6 +456,21 @@ export function InboxList() {
                   Mark as Read
                 </Button>
               )}
+
+              {selectedMessage && selectedMessage.read && (
+                <Button
+                  variant="outline"
+                  className="w-full h-11 border-neutral-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200"
+                  onClick={() => {
+                    if (selectedMessage) {
+                      setMessageToDelete(selectedMessage)
+                    }
+                  }}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Message
+                </Button>
+              )}
             </div>
           </div>
         </DialogContent>
@@ -406,6 +496,54 @@ export function InboxList() {
               }}
             >
               Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!messageToDelete} onOpenChange={() => setMessageToDelete(null)}>
+        <AlertDialogContent className="bg-white text-black border-neutral-200">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Message?</AlertDialogTitle>
+            <AlertDialogDescription className="text-neutral-600">
+              This action cannot be undone. This will permanently delete the message from the database.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-neutral-200 hover:bg-neutral-50 text-black">Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              className="bg-red-600 text-white hover:bg-red-700"
+              onClick={() => {
+                if (messageToDelete) {
+                  deleteMessage(messageToDelete.id)
+                  setMessageToDelete(null)
+                }
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showDeleteAllDialog} onOpenChange={setShowDeleteAllDialog}>
+        <AlertDialogContent className="bg-white text-black border-neutral-200">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete All Archived Messages?</AlertDialogTitle>
+            <AlertDialogDescription className="text-neutral-600">
+              This action cannot be undone. This will permanently delete all {messages.filter(m => m.read).length} archived messages from the database.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-neutral-200 hover:bg-neutral-50 text-black">Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              className="bg-red-600 text-white hover:bg-red-700"
+              onClick={() => {
+                deleteAllArchived()
+                setShowDeleteAllDialog(false)
+              }}
+            >
+              Delete All
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

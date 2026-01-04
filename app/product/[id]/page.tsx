@@ -33,8 +33,8 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
             ...data,
             // Ensure compatibility with the UI
             images: data.images && data.images.length > 0 ? data.images : ["/placeholder.svg"],
-            rating: 4.8, // Mock for now
-            reviews: 124, // Mock for now
+            rating: data.averageRating ? data.averageRating / 10 : 0, 
+            reviews: data.reviewCount || 0,
             inStock: data.stockCount > 0
           })
         }
@@ -353,7 +353,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
           </div>
 
           {/* Reviews Section */}
-          <ProductReviews />
+          <ProductReviews productId={product.id} />
 
           {/* Related Products */}
           <section>

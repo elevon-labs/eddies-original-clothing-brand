@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { useSession } from "next-auth/react"
 import { Input } from "@/components/ui/input"
@@ -12,74 +12,61 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 // Mock Data
 interface Review {
-  id: number
+  id: string
   user: {
-    name: string
+    name: string | null
     image: string | null
   }
   rating: number
-  date: string
-  title: string
+  createdAt: string
+  title: string | null
   content: string
-  helpful: number
 }
 
-const MOCK_REVIEWS: Review[] = [
-  {
-    id: 1,
-    user: {
-      name: "Alex Thompson",
-      image: null,
-    },
-    rating: 5,
-    date: "2023-12-15",
-    title: "Absolutely perfect fit",
-    content: "I was skeptical about the sizing at first, but the fit is exactly what I was looking for. The material feels premium and heavy-weight. Definitely worth the price.",
-    helpful: 12,
-  },
-  {
-    id: 2,
-    user: {
-      name: "Sarah Jenkins",
-      image: null,
-    },
-    rating: 5,
-    date: "2023-11-28",
-    title: "My new favorite hoodie",
-    content: "The quality is unmatched. I've washed it multiple times and it hasn't faded or lost its shape. Highly recommend!",
-    helpful: 8,
-  },
-  {
-    id: 3,
-    user: {
-      name: "Marcus Johnson",
-      image: null,
-    },
-    rating: 4,
-    date: "2023-11-10",
-    title: "Great quality, slightly long shipping",
-    content: "The product itself is amazing, 5 stars for that. Taking off one star because shipping took a bit longer than expected, but customer service was helpful.",
-    helpful: 5,
-  },
-]
+interface ProductReviewsProps {
+  productId: string
+}
 
-export function ProductReviews() {
+export function ProductReviews({ productId }: ProductReviewsProps) {
   const { data: session } = useSession()
   const { toast } = useToast()
-  const [reviews, setReviews] = useState(MOCK_REVIEWS)
+  const [reviews, setReviews] = useState<Review[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [isWriting, setIsWriting] = useState(false)
   const [newReview, setNewReview] = useState({ rating: 5, title: "", content: "" })
   const [hoveredStar, setHoveredStar] = useState(0)
 
+  useEffect(() => {
+    async function fetchReviews() {
+      if (!productId) return
+      try {
+        const res = await fetch(`/api/products/${productId}/reviews`)
+        if (res.ok) {
+          const data = await res.json()
+          setReviews(data)
+        }
+      } catch (error) {
+        console.error("Failed to fetch reviews", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchReviews()
+  }, [productId])
+
   // Stats
-  const averageRating = (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
+  const averageRating = reviews.length > 0 
+    ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
+    : "0.0"
+  
   const totalReviews = reviews.length
+  
   const ratingDistribution = [5, 4, 3, 2, 1].map(stars => ({
     stars,
     count: reviews.filter(r => r.rating === stars).length
   }))
 
-  const handleSubmitReview = (e: React.FormEvent) => {
+  const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!newReview.title || !newReview.content) {
@@ -91,27 +78,46 @@ export function ProductReviews() {
       return
     }
 
-    const review = {
-      id: reviews.length + 1,
-      user: {
-        name: session?.user?.name || "Anonymous User",
-        image: session?.user?.image || null,
-      },
-      rating: newReview.rating,
-      date: new Date().toISOString().split('T')[0],
-      title: newReview.title,
-      content: newReview.content,
-      helpful: 0,
-    }
+    try {
+      const res = await fetch(`/api/products/${productId}/reviews`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newReview),
+      })
 
-    setReviews([review, ...reviews])
-    setIsWriting(false)
-    setNewReview({ rating: 5, title: "", content: "" })
-    
-    toast({
-      title: "Review submitted",
-      description: "Thank you for sharing your feedback!",
-    })
+      if (!res.ok) throw new Error("Failed to submit review")
+
+      const savedReview = await res.json()
+      
+      // Add user details for immediate display (API might return review without user join initially if we just return the insert result, 
+      // but usually we want to re-fetch or construct it manually. 
+      // The API returns `newReview[0]` which is just the review row. 
+      // We need to attach user info to update UI optimistically or fetch again.
+      // Let's construct it manually for UI update.)
+      
+      const reviewWithUser: Review = {
+        ...savedReview,
+        user: {
+          name: session?.user?.name || "User",
+          image: session?.user?.image || null,
+        }
+      }
+
+      setReviews([reviewWithUser, ...reviews])
+      setIsWriting(false)
+      setNewReview({ rating: 5, title: "", content: "" })
+      
+      toast({
+        title: "Review submitted",
+        description: "Thank you for sharing your feedback!",
+      })
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit review. Please try again.",
+        variant: "destructive",
+      })
+    }
   }
 
   if (!session) {
@@ -334,11 +340,11 @@ export function ProductReviews() {
                     <Avatar className="h-10 w-10 border border-black/10">
                       <AvatarImage src={review.user.image || undefined} />
                       <AvatarFallback className="bg-neutral-100 font-medium">
-                        {review.user.name.charAt(0)}
+                        {review.user.name?.charAt(0) || "U"}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <h4 className="font-bold text-sm">{review.user.name}</h4>
+                      <h4 className="font-bold text-sm">{review.user.name || "Anonymous User"}</h4>
                       <div className="flex items-center gap-2">
                         <div className="flex">
                           {[...Array(5)].map((_, i) => (
@@ -350,7 +356,7 @@ export function ProductReviews() {
                             />
                           ))}
                         </div>
-                        <span className="text-xs text-neutral-400">• {review.date}</span>
+                        <span className="text-xs text-neutral-400">• {new Date(review.createdAt).toLocaleDateString()}</span>
                       </div>
                     </div>
                   </div>
@@ -362,14 +368,11 @@ export function ProductReviews() {
                 </p>
                 
                 <div className="flex items-center gap-4 text-xs text-neutral-500">
-                  <button className="flex items-center gap-1.5 hover:text-black transition-colors">
+                  {/* Helpful feature not yet implemented in backend */}
+                  {/* <button className="flex items-center gap-1.5 hover:text-black transition-colors">
                     <ThumbsUp className="h-3.5 w-3.5" />
-                    Helpful ({review.helpful})
-                  </button>
-                  <button className="flex items-center gap-1.5 hover:text-black transition-colors">
-                    <MessageSquare className="h-3.5 w-3.5" />
-                    Comment
-                  </button>
+                    Helpful
+                  </button> */}
                 </div>
               </div>
             ))}
