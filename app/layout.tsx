@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description:
     "Premium streetwear crafted with confidence, attitude, and purpose. Bold designs for those who stand out.",
   generator: "v0.app",
-  keywords: ["streetwear", "luxury fashion", "Lagos fashion", "premium clothing", "urban wear"],
+  keywords: ["streetwear", "luxury fashion", "Ejigbo, Lagos Nigeria fashion", "premium clothing", "urban wear"],
   icons: {
     icon: [
       {

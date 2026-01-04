@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button"
 import { useCart } from "@/components/cart-provider"
 import { Heart, Star, Truck, RotateCcw, Shield, ChevronDown, ChevronUp } from "lucide-react"
 import { ProductCard } from "@/components/product-card"
+import { ProductReviews } from "@/components/product-reviews"
 import Image from "next/image"
 
 export default function ProductPage({ params }: { params: { id: string } }) {
   const [selectedSize, setSelectedSize] = useState("")
+  const [selectedColor, setSelectedColor] = useState("")
   const [quantity, setQuantity] = useState(1)
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [selectedImage, setSelectedImage] = useState(0)
@@ -33,6 +35,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
       "/black-oversized-tee-luxury-streetwear.jpg",
     ],
     sizes: ["XS", "S", "M", "L", "XL", "XXL"],
+    colors: ["#000000", "#FFFFFF", "#808080", "#404040"],
     rating: 4.8,
     reviews: 124,
     inStock: true,
@@ -105,10 +108,10 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     <div className="min-h-screen bg-white text-black">
       <Header />
 
-      <div className="pt-8 pb-20 px-6">
+      <div className="pt-8 pb-20 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
           {/* Product Details */}
-          <div className="grid md:grid-cols-2 gap-12 mb-24">
+          <div className="grid md:grid-cols-2 gap-8 md:gap-12 mb-24">
             {/* Images */}
             <div>
               <div className="relative aspect-[3/4] bg-neutral-100 rounded-lg overflow-hidden mb-4">
@@ -179,7 +182,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               <div className="mb-6">
                 <div className="flex justify-between items-center mb-3">
                   <label className="font-bold text-sm tracking-wider">SELECT SIZE</label>
-                  <button className="text-xs text-black/60 underline underline-offset-4">Size Guide</button>
                 </div>
                 <div className="grid grid-cols-6 gap-2">
                   {product.sizes.map((size) => (
@@ -194,6 +196,26 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                     >
                       {size}
                     </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Color Selection */}
+              <div className="mb-6">
+                <label className="font-bold text-sm tracking-wider mb-3 block">SELECT COLOR</label>
+                <div className="flex gap-3">
+                  {product.colors.map((color) => (
+                    <button
+                      key={color}
+                      onClick={() => setSelectedColor(color)}
+                      className={`w-10 h-10 rounded-full border-2 transition-all ${
+                        selectedColor === color
+                          ? "border-black scale-110 ring-2 ring-black ring-offset-2"
+                          : "border-black/10 hover:border-black"
+                      }`}
+                      style={{ backgroundColor: color }}
+                      aria-label={`Select color ${color}`}
+                    />
                   ))}
                 </div>
               </div>
@@ -227,17 +249,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 <Button
                   size="lg"
                   onClick={handleAddToCart}
-                  className="flex-1 bg-black text-white hover:bg-black/90 font-semibold tracking-wide h-14"
+                  className="w-full bg-black text-white hover:bg-black/90 font-semibold tracking-wide h-14"
                 >
                   ADD TO CART
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setIsWishlisted(!isWishlisted)}
-                  className={`h-14 w-14 ${isWishlisted ? "bg-black text-white" : "bg-transparent"}`}
-                >
-                  <Heart className={`h-6 w-6 ${isWishlisted ? "fill-current" : ""}`} />
                 </Button>
               </div>
 
@@ -245,11 +259,11 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               <div className="space-y-4 mb-8 pb-8 border-b border-black/10">
                 <div className="flex items-center gap-3">
                   <Truck className="h-5 w-5 text-black/60" />
-                  <span className="text-sm">Free shipping on orders over ₦50,000</span>
+                  <span className="text-sm">Fast nationwide delivery</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <RotateCcw className="h-5 w-5 text-black/60" />
-                  <span className="text-sm">30-day easy returns</span>
+                  <span className="text-sm">No refund policy</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Shield className="h-5 w-5 text-black/60" />
@@ -293,12 +307,10 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                   {showShipping && (
                     <div className="pb-4 text-black/70 leading-relaxed text-sm space-y-2">
                       <p>
-                        <strong>Shipping:</strong> Free shipping on orders over ₦50,000. Standard delivery takes 3-5
-                        business days within Lagos and 5-7 business days nationwide.
+                        <strong>Shipping:</strong> Standard delivery takes 3-5 business days within Lagos and 5-7 business days nationwide.
                       </p>
                       <p>
-                        <strong>Returns:</strong> We offer a 30-day return policy. Items must be unworn, unwashed, and
-                        in original condition with tags attached.
+                        <strong>Returns:</strong> All sales are final. No refunds or exchanges.
                       </p>
                     </div>
                   )}
@@ -306,6 +318,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               </div>
             </div>
           </div>
+
+          {/* Reviews Section */}
+          <ProductReviews />
 
           {/* Related Products */}
           <section>

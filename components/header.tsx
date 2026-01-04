@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ShoppingBag, Menu, X, Search, User } from "lucide-react"
+import { ShoppingBag, Menu, X, User } from "lucide-react"
 import { useState } from "react"
 import { useCart } from "./cart-provider"
 
@@ -12,26 +12,17 @@ export function Header() {
 
   return (
     <>
-      {/* Top Banner */}
-      <div className="bg-black text-white py-3 px-4 text-center text-sm">
-        <p className="tracking-wide">
-          FREE SHIPPING ON ORDERS OVER ₦50,000 | NEW ARRIVALS NOW LIVE{" "}
-          <Link href="/shop/new" className="underline underline-offset-4 font-semibold ml-2">
-            SHOP NOW
-          </Link>
-        </p>
-      </div>
-
       {/* Navigation */}
       <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-black/10 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            <Link href="/" className="text-2xl font-bold tracking-tight">
-              EDDIE ORIGINALS
+        <div className="w-full mx-auto px-6 md:px-12 lg:px-16">
+          <div className="flex items-center justify-between h-24">
+            <Link href="/" className="flex items-center gap-3 md:gap-4 text-base md:text-xl font-bold tracking-tight">
+              <img src="/logo.jpg" alt="Eddie Originals Logo" className="h-9 w-auto md:h-11 rounded-full object-contain" />
+              <span>EDDIE ORIGINALS</span>
             </Link>
 
             {/* Desktop Menu */}
-            <div className="hidden lg:flex items-center gap-8">
+            <div className="hidden lg:flex items-center gap-10 xl:gap-14">
               <Link href="/shop" className="text-sm font-medium tracking-wide hover:text-black/60 transition-colors">
                 SHOP ALL
               </Link>
@@ -53,21 +44,21 @@ export function Header() {
             </div>
 
             {/* Desktop Actions */}
-            <div className="hidden lg:flex items-center gap-4">
-              <Button variant="ghost" size="icon" asChild className="text-black hover:bg-black/5">
-                <Link href="/search">
-                  <Search className="h-5 w-5" />
-                </Link>
-              </Button>
-              <Button variant="ghost" size="icon" asChild className="text-black hover:bg-black/5">
-                <Link href="/account">
-                  <User className="h-5 w-5" />
+            <div className="hidden lg:flex items-center gap-6">
+              <Button 
+                asChild 
+                size="sm"
+                className="bg-transparent border border-black text-black hover:bg-black hover:text-white transition-colors text-sm font-medium tracking-wide px-6"
+              >
+                <Link href="/account/login">
+                  <User className="h-4 w-4 mr-2" />
+                  ACCOUNT
                 </Link>
               </Button>
               <Button
                 size="sm"
                 asChild
-                className="bg-black text-white hover:bg-black/90 font-medium tracking-wide px-6"
+                className="bg-black text-white hover:bg-black/90 text-sm font-medium tracking-wide px-6"
               >
                 <Link href="/cart" className="relative">
                   <ShoppingBag className="h-4 w-4 mr-2" />
@@ -81,15 +72,33 @@ export function Header() {
               </Button>
             </div>
 
-            {/* Mobile Menu Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden text-black hover:bg-black/5"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </Button>
+            {/* Mobile Actions */}
+            <div className="flex items-center gap-2 lg:hidden">
+              <Button
+                size="icon"
+                variant="ghost"
+                asChild
+                className="text-black hover:bg-black/5 relative"
+              >
+                <Link href="/cart">
+                  <ShoppingBag className="h-6 w-6" />
+                  {itemCount > 0 && (
+                    <span className="absolute top-1 right-1 bg-red-600 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                      {itemCount}
+                    </span>
+                  )}
+                </Link>
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-black hover:bg-black/5"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -134,7 +143,7 @@ export function Header() {
               </Link>
               <div className="pt-4 border-t border-black/10 flex gap-2">
                 <Button variant="outline" size="sm" asChild className="flex-1 bg-transparent">
-                  <Link href="/account">
+                  <Link href="/account/login">
                     <User className="h-4 w-4 mr-2" />
                     ACCOUNT
                   </Link>
