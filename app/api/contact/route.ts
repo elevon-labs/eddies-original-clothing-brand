@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { messages } from "@/db/schema";
+import { sendAdminNotificationEmail } from "@/lib/mail";
 
 export async function POST(request: Request) {
   try {
@@ -18,8 +19,24 @@ export async function POST(request: Request) {
       message,
     });
 
-    // Optional: Send email notification via Resend or similar here
-    // For now, just storing in DB is sufficient for Phase 4
+    // Notify Admin
+    try {
+      await sendAdminNotificationEmail({
+        subject: `New Contact Message: ${subject || "No Subject"}`,
+        text: `From: ${name} (${email})\n\nMessage:\n${message}`,
+        html: `
+          <div style="font-family: sans-serif;">
+            <h2>New Contact Message</h2>
+            <p><strong>From:</strong> ${name} (<a href="mailto:${email}">${email}</a>)</p>
+            <p><strong>Subject:</strong> ${subject || "No Subject"}</p>
+            <hr />
+            <p style="white-space: pre-wrap;">${message}</p>
+          </div>
+        `
+      });
+    } catch (error) {
+      console.error("Failed to send admin notification:", error);
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

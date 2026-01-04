@@ -146,3 +146,23 @@ Eddie Originals Team`,
 `,
   })
 }
+
+export const sendAdminNotificationEmail = async ({
+  subject,
+  text,
+  html,
+}: {
+  subject: string
+  text: string
+  html?: string
+}) => {
+  const adminEmail = process.env.ADMIN_EMAIL || "hello@eddieoriginals-department.com"
+
+  await resend.emails.send({
+    from: "Eddie Originals <hello@eddieoriginals-department.com>",
+    to: adminEmail,
+    subject: `[Admin Alert] ${subject}`,
+    text,
+    html: html || `<p>${text.replace(/\n/g, "<br>")}</p>`,
+  })
+}
