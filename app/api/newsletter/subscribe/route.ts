@@ -33,7 +33,14 @@ export async function POST(request: Request) {
       await sendAdminNotificationEmail({
         subject: "New Newsletter Subscriber",
         text: `New subscriber: ${email}`,
-        html: `<p>New subscriber: <strong>${email}</strong></p>`
+        html: `
+          <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
+            <h2 style="color: #111; margin-bottom: 16px;">New Newsletter Subscriber 🚀</h2>
+            <p style="color: #666; margin-bottom: 8px;">A new user has just subscribed to the newsletter:</p>
+            <p style="font-size: 18px; font-weight: bold; color: #000; padding: 12px; background: #f9f9f9; border-radius: 4px; display: inline-block;">${email}</p>
+            <p style="font-size: 12px; color: #999; margin-top: 24px;">Time: ${new Date().toLocaleString()}</p>
+          </div>
+        `
       });
     } catch (error) {
       console.error("Failed to send admin notification:", error);
