@@ -6,10 +6,11 @@ import { eq, and } from "drizzle-orm"
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
+    const { id } = await params
 
     if (!session || !session.user || !session.user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -18,7 +19,7 @@ export async function DELETE(
     // Ensure address belongs to user before deleting
     const deletedAddress = await db
       .delete(addresses)
-      .where(and(eq(addresses.id, params.id), eq(addresses.userId, session.user.id)))
+      .where(and(eq(addresses.id, id), eq(addresses.userId, session.user.id)))
       .returning()
 
     if (deletedAddress.length === 0) {
