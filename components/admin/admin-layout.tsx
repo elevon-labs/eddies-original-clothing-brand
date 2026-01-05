@@ -16,10 +16,16 @@ const navigation = [
   { name: "Inbox", href: "/admin/inbox", icon: MessageSquare },
 ]
 
+import { signOut } from "next-auth/react"
+
 export function AdminLayout({ children }: { children: ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
+
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: "/account/login" })
+  }
 
   const NavContent = () => (
     <div className="flex h-full flex-col">
@@ -59,7 +65,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
         <Button
           variant="ghost"
           className="w-full justify-start text-neutral-400 hover:bg-neutral-900 hover:text-white"
-          onClick={() => {}}
+          onClick={handleLogout}
         >
           <LogOut className="mr-3 h-5 w-5" />
           Logout

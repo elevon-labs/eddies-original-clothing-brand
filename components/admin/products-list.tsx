@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -35,162 +35,19 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 import { Card, CardContent } from "@/components/ui/card"
-import { Edit, Trash2, Search, ArrowUpDown } from "lucide-react"
+import { Edit, Trash2, Search, ArrowUpDown, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
-// Mock product data - Expanded for pagination
-const initialProducts = [
-  {
-    id: "1",
-    name: "Classic Black Bomber",
-    image: "/black-bomber-streetwear.png",
-    price: 89000,
-    stock: 15,
-    visible: true,
-    category: "Outerwear",
-    collection: "Winter 2024",
-  },
-  {
-    id: "2",
-    name: "Oversized Graphic Tee",
-    image: "/black-oversized-tee-luxury-streetwear.jpg",
-    price: 35000,
-    stock: 3,
-    visible: true,
-    category: "Tees",
-    collection: "Streetwear",
-  },
-  {
-    id: "3",
-    name: "Premium Joggers",
-    image: "/black-joggers-streetwear.jpg",
-    price: 65000,
-    stock: 8,
-    visible: true,
-    category: "Bottoms",
-    collection: "Essentials",
-  },
-  {
-    id: "4",
-    name: "Crewneck Sweatshirt",
-    image: "/black-crewneck-graphic-streetwear.jpg",
-    price: 55000,
-    stock: 0,
-    visible: false,
-    category: "Hoodies",
-    collection: "Winter 2024",
-  },
-  {
-    id: "5",
-    name: "Vintage Wash Hoodie",
-    image: "/placeholder.svg",
-    price: 75000,
-    stock: 12,
-    visible: true,
-    category: "Hoodies",
-    collection: "Essentials",
-  },
-  {
-    id: "6",
-    name: "Cargo Pants",
-    image: "/placeholder.svg",
-    price: 58000,
-    stock: 6,
-    visible: true,
-    category: "Bottoms",
-    collection: "Streetwear",
-  },
-  {
-    id: "7",
-    name: "Signature Cap",
-    image: "/placeholder.svg",
-    price: 25000,
-    stock: 25,
-    visible: true,
-    category: "Accessories",
-    collection: "Essentials",
-  },
-  {
-    id: "8",
-    name: "Heavyweight Cotton Tee",
-    image: "/placeholder.svg",
-    price: 42000,
-    stock: 4,
-    visible: true,
-    category: "Tees",
-    collection: "Summer 2024",
-  },
-  {
-    id: "9",
-    name: "Windbreaker Jacket",
-    image: "/placeholder.svg",
-    price: 95000,
-    stock: 9,
-    visible: true,
-    category: "Outerwear",
-    collection: "Spring 2024",
-  },
-  {
-    id: "10",
-    name: "Denim Jacket",
-    image: "/placeholder.svg",
-    price: 110000,
-    stock: 2,
-    visible: true,
-    category: "Outerwear",
-    collection: "Essentials",
-  },
-  {
-    id: "11",
-    name: "Beanie",
-    image: "/placeholder.svg",
-    price: 18000,
-    stock: 30,
-    visible: true,
-    category: "Accessories",
-    collection: "Winter 2024",
-  },
-  {
-    id: "12",
-    name: "Socks (3-Pack)",
-    image: "/placeholder.svg",
-    price: 15000,
-    stock: 50,
-    visible: true,
-    category: "Accessories",
-    collection: "Essentials",
-  },
-  {
-    id: "13",
-    name: "Puffer Vest",
-    image: "/placeholder.svg",
-    price: 68000,
-    stock: 0,
-    visible: false,
-    category: "Outerwear",
-    collection: "Winter 2024",
-  },
-  {
-    id: "14",
-    name: "Shorts",
-    image: "/placeholder.svg",
-    price: 45000,
-    stock: 18,
-    visible: true,
-    category: "Bottoms",
-    collection: "Summer 2024",
-  },
-  {
-    id: "15",
-    name: "Graphic Long Sleeve",
-    image: "/placeholder.svg",
-    price: 48000,
-    stock: 7,
-    visible: true,
-    category: "Tees",
-    collection: "Spring 2024",
-  },
-]
+type Product = {
+  id: string
+  name: string
+  image: string
+  price: number
+  stock: number
+  visible: boolean
+  category: string
+  collection: string
+}
 
 type SortConfig = {
   key: "name" | "price" | "stock"
@@ -198,13 +55,50 @@ type SortConfig = {
 }
 
 export function ProductsList() {
-  const [products, setProducts] = useState(initialProducts)
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: "name", direction: "asc" })
   const [currentPage, setCurrentPage] = useState(1)
   const { toast } = useToast()
 
   const itemsPerPage = 10
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true)
+      const res = await fetch("/api/products")
+      if (!res.ok) throw new Error("Failed to fetch products")
+      const data = await res.json()
+      
+      // Transform API data to UI model
+      const formattedProducts = data.map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        image: p.images && p.images.length > 0 ? p.images[0] : "/placeholder.svg",
+        price: p.price,
+        stock: p.stockCount || 0,
+        visible: p.isActive,
+        category: p.category || "Uncategorized",
+        collection: p.collection || "General",
+      }))
+
+      setProducts(formattedProducts)
+    } catch (error) {
+      console.error("Error fetching products:", error)
+      toast({
+        title: "Error",
+        description: "Failed to load products",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchProducts()
+  }, [])
 
   // Filter Logic
   const filteredProducts = products.filter((product) => {
@@ -244,27 +138,73 @@ export function ProductsList() {
     setCurrentPage(page)
   }
 
-  const toggleVisibility = (id: string) => {
+  const toggleVisibility = async (id: string, currentStatus: boolean) => {
+    // Optimistic update
     setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, visible: !p.visible } : p)))
-    toast({
-      title: "Visibility updated",
-      description: "Product visibility has been changed",
-    })
+    
+    try {
+      const res = await fetch(`/api/products/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: !currentStatus }),
+      })
+
+      if (!res.ok) throw new Error("Failed to update visibility")
+      
+      toast({
+        title: "Visibility updated",
+        description: "Product visibility has been changed",
+      })
+    } catch (error) {
+      console.error("Error updating visibility:", error)
+      // Revert on error
+      setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, visible: currentStatus } : p)))
+      toast({
+        title: "Error",
+        description: "Failed to update visibility",
+        variant: "destructive",
+      })
+    }
   }
 
-  const deleteProduct = (id: string, name: string) => {
-    setProducts((prev) => prev.filter((p) => p.id !== id))
-    toast({
-      title: "Product deleted",
-      description: `${name} has been removed from catalog`,
-      variant: "destructive",
-    })
+  const deleteProduct = async (id: string, name: string) => {
+    try {
+      const res = await fetch(`/api/products/${id}`, {
+        method: "DELETE",
+      })
+
+      if (!res.ok) throw new Error("Failed to delete product")
+
+      setProducts((prev) => prev.filter((p) => p.id !== id))
+      toast({
+        title: "Product deleted",
+        description: `${name} has been removed from catalog`,
+        variant: "destructive",
+      })
+    } catch (error) {
+      console.error("Error deleting product:", error)
+      toast({
+        title: "Error",
+        description: "Failed to delete product",
+        variant: "destructive",
+      })
+    }
   }
 
   const getStockStatus = (stock: number) => {
     if (stock === 0) return { label: "Out", variant: "destructive" as const, color: "text-red-600" }
     if (stock < 5) return { label: "Low", variant: "outline" as const, color: "text-yellow-600" }
     return { label: "In Stock", variant: "default" as const, color: "text-green-600" }
+  }
+
+  if (loading) {
+    return (
+      <Card className="bg-white border-neutral-200">
+        <CardContent className="p-8 flex justify-center items-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-neutral-400" />
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
@@ -358,7 +298,7 @@ export function ProductsList() {
                         </div>
                       </TableCell>
                       <TableCell className="text-center">
-                        <Switch checked={product.visible} onCheckedChange={() => toggleVisibility(product.id)} />
+                        <Switch checked={product.visible} onCheckedChange={() => toggleVisibility(product.id, product.visible)} />
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
@@ -456,7 +396,7 @@ export function ProductsList() {
                     <div className="flex items-center gap-2">
                       <Switch 
                         checked={product.visible} 
-                        onCheckedChange={() => toggleVisibility(product.id)}
+                        onCheckedChange={() => toggleVisibility(product.id, product.visible)}
                         className="scale-90"
                       />
                       <span className="text-sm font-medium text-neutral-600">

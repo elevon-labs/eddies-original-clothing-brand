@@ -1,16 +1,19 @@
 "use client"
 
-import { useState } from "react"
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
+import { useState, useEffect, use } from "react"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/components/cart-provider"
 import { Heart, Star, Truck, RotateCcw, Shield, ChevronDown, ChevronUp } from "lucide-react"
 import { ProductCard } from "@/components/product-card"
 import { ProductReviews } from "@/components/product-reviews"
 import Image from "next/image"
+import { Product } from "@/types"
+import { Skeleton } from "@/components/ui/skeleton"
 
-export default function ProductPage({ params }: { params: { id: string } }) {
+export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
+  const [product, setProduct] = useState<Product | null>(null)
+  const [loading, setLoading] = useState(true)
   const [selectedSize, setSelectedSize] = useState("")
   const [selectedColor, setSelectedColor] = useState("")
   const [quantity, setQuantity] = useState(1)
@@ -20,31 +23,61 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   const [showShipping, setShowShipping] = useState(false)
   const { addItem } = useCart()
 
-  // Mock product data
-  const product = {
-    id: Number.parseInt(params.id),
-    name: "Signature Oversized Tee",
-    price: 45000,
-    originalPrice: 65000,
-    description:
-      "The Signature Oversized Tee is crafted from premium 100% cotton with a heavyweight 320gsm fabric. Designed with an intentionally relaxed fit and dropped shoulders for maximum comfort and style. Features our signature Eddie Originals branding on the chest and back.",
-    images: [
-      "/black-oversized-tee-luxury-streetwear.jpg",
-      "/black-oversized-tee-luxury-streetwear.jpg",
-      "/black-oversized-tee-luxury-streetwear.jpg",
-      "/black-oversized-tee-luxury-streetwear.jpg",
-    ],
-    sizes: ["XS", "S", "M", "L", "XL", "XXL"],
-    colors: ["#000000", "#FFFFFF", "#808080", "#404040"],
-    rating: 4.8,
-    reviews: 124,
-    inStock: true,
-    category: "Essentials",
+  useEffect(() => {
+    async function fetchProduct() {
+      try {
+        const res = await fetch(`/api/products/${id}`)
+        if (res.ok) {
+          const data = await res.json()
+          setProduct({
+            ...data,
+            // Ensure compatibility with the UI
+            images: data.images && data.images.length > 0 ? data.images : ["/placeholder.svg"],
+            rating: data.averageRating ? data.averageRating / 10 : 0, 
+            reviews: data.reviewCount || 0,
+            inStock: data.stockCount > 0
+          })
+        }
+      } catch (e) {
+        console.error("Failed to fetch product", e)
+      } finally {
+        setLoading(false)
+      }
+    }
+    if (id) {
+      fetchProduct()
+    }
+  }, [id])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white pt-8 pb-20 px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-8 md:gap-12">
+          <Skeleton className="aspect-[3/4] w-full rounded-lg bg-neutral-200" />
+          <div className="space-y-6">
+            <Skeleton className="h-4 w-24 bg-neutral-200" />
+            <Skeleton className="h-12 w-3/4 bg-neutral-200" />
+            <Skeleton className="h-6 w-1/3 bg-neutral-200" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-full bg-neutral-200" />
+              <Skeleton className="h-4 w-full bg-neutral-200" />
+              <Skeleton className="h-4 w-2/3 bg-neutral-200" />
+            </div>
+            <Skeleton className="h-14 w-full bg-neutral-200" />
+          </div>
+        </div>
+      </div>
+    )
   }
 
+  if (!product) {
+    return <div className="min-h-screen flex items-center justify-center">Product not found</div>
+  }
+
+  // Mock related products (or fetch real ones if API supports it)
   const relatedProducts = [
     {
-      id: 2,
+      id: "2",
       name: "Premium Cargo Pants",
       price: 85000,
       image: "/black-cargo-streetwear.png",
@@ -53,7 +86,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
       reviews: 89,
     },
     {
-      id: 3,
+      id: "3",
       name: "Statement Hoodie",
       price: 95000,
       originalPrice: 120000,
@@ -64,7 +97,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
       reviews: 156,
     },
     {
-      id: 4,
+      id: "4",
       name: "Essential Track Jacket",
       price: 120000,
       image: "/black-track-jacket-modern-streetwear.jpg",
@@ -73,7 +106,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
       reviews: 73,
     },
     {
-      id: 5,
+      id: "5",
       name: "Urban Bomber Jacket",
       price: 145000,
       image: "/black-bomber-streetwear.png",
@@ -93,7 +126,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
       id: product.id,
       name: product.name,
       price: product.price,
-      image: product.images[0],
+      image: product.images ? product.images[0] : "",
       quantity: quantity,
       size: selectedSize,
     })
@@ -106,17 +139,16 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="min-h-screen bg-white text-black">
-      <Header />
-
+      
       <div className="pt-8 pb-20 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
           {/* Product Details */}
           <div className="grid md:grid-cols-2 gap-8 md:gap-12 mb-24">
             {/* Images */}
             <div>
-              <div className="relative aspect-[3/4] bg-neutral-100 rounded-lg overflow-hidden mb-4">
+              <div className="relative aspect-square bg-neutral-100 rounded-lg overflow-hidden mb-4">
                 <Image
-                  src={product.images[selectedImage] || "/placeholder.svg"}
+                  src={product.images?.[selectedImage] || "/placeholder.svg"}
                   alt={product.name}
                   fill
                   className="object-cover"
@@ -130,7 +162,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 )}
               </div>
               <div className="grid grid-cols-4 gap-4">
-                {product.images.map((img, idx) => (
+                {product.images?.map((img: string, idx: number) => (
                   <button
                     key={idx}
                     onClick={() => setSelectedImage(idx)}
@@ -162,7 +194,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className={`h-5 w-5 ${i < Math.floor(product.rating) ? "fill-black text-black" : "text-black/20"}`}
+                      className={`h-5 w-5 ${i < Math.floor(product.rating || 0) ? "fill-black text-black" : "text-black/20"}`}
                     />
                   ))}
                 </div>
@@ -184,7 +216,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                   <label className="font-bold text-sm tracking-wider">SELECT SIZE</label>
                 </div>
                 <div className="grid grid-cols-6 gap-2">
-                  {product.sizes.map((size) => (
+                  {product.sizes?.map((size: string) => (
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
@@ -204,17 +236,18 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               <div className="mb-6">
                 <label className="font-bold text-sm tracking-wider mb-3 block">SELECT COLOR</label>
                 <div className="flex gap-3">
-                  {product.colors.map((color) => (
+                  {product.colors?.map((color) => (
                     <button
-                      key={color}
-                      onClick={() => setSelectedColor(color)}
+                      key={color.name}
+                      onClick={() => setSelectedColor(color.name)}
                       className={`w-10 h-10 rounded-full border-2 transition-all ${
-                        selectedColor === color
+                        selectedColor === color.name
                           ? "border-black scale-110 ring-2 ring-black ring-offset-2"
                           : "border-black/10 hover:border-black"
                       }`}
-                      style={{ backgroundColor: color }}
-                      aria-label={`Select color ${color}`}
+                      style={{ backgroundColor: color.hex }}
+                      title={color.name}
+                      aria-label={`Select color ${color.name}`}
                     />
                   ))}
                 </div>
@@ -320,7 +353,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           </div>
 
           {/* Reviews Section */}
-          <ProductReviews />
+          <ProductReviews productId={product.id} />
 
           {/* Related Products */}
           <section>
@@ -337,7 +370,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         </div>
       </div>
 
-      <Footer />
     </div>
   )
 }

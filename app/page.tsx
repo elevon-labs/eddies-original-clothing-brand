@@ -1,96 +1,33 @@
 import Link from "next/link"
+import Image from "next/image"
 import { TikTok } from "@/components/icons"
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Newsletter } from "@/components/newsletter"
 import { ProductCard } from "@/components/product-card"
 import { ArrowRight, Instagram, Shield, Sparkles } from "lucide-react"
+import { db } from "@/db"
+import { products } from "@/db/schema"
+import { desc, eq } from "drizzle-orm"
 
-export default function HomePage() {
-  const featuredProducts = [
-    {
-      id: 1,
-      name: "Signature Oversized Tee",
-      price: 45000,
-      originalPrice: 65000,
-      image: "/black-oversized-tee-luxury-streetwear.jpg",
-      category: "Essentials",
-      badge: "NEW",
-      rating: 4.8,
-      reviews: 124,
-    },
-    {
-      id: 2,
-      name: "Premium Cargo Pants",
-      price: 85000,
-      image: "/black-cargo-streetwear.png",
-      category: "Bottoms",
-      badge: "TRENDING",
-      rating: 4.9,
-      reviews: 89,
-    },
-    {
-      id: 3,
-      name: "Statement Hoodie",
-      price: 95000,
-      originalPrice: 120000,
-      image: "/black-hoodie-luxury-street-fashion.jpg",
-      category: "Tops",
-      badge: "SALE",
-      rating: 4.7,
-      reviews: 156,
-    },
-    {
-      id: 4,
-      name: "Essential Track Jacket",
-      price: 120000,
-      image: "/black-track-jacket-modern-streetwear.jpg",
-      category: "Outerwear",
-      rating: 4.6,
-      reviews: 73,
-    },
-    {
-      id: 5,
-      name: "Urban Bomber Jacket",
-      price: 145000,
-      image: "/black-bomber-streetwear.png",
-      category: "Outerwear",
-      badge: "EXCLUSIVE",
-      rating: 4.9,
-      reviews: 45,
-    },
-    {
-      id: 6,
-      name: "Classic Joggers",
-      price: 65000,
-      image: "/black-joggers-streetwear.jpg",
-      category: "Bottoms",
-      rating: 4.5,
-      reviews: 198,
-    },
-    {
-      id: 7,
-      name: "Graphic Crewneck",
-      price: 55000,
-      originalPrice: 75000,
-      image: "/black-crewneck-graphic-streetwear.jpg",
-      category: "Essentials",
-      badge: "SALE",
-      rating: 4.8,
-      reviews: 142,
-    },
-    {
-      id: 8,
-      name: "Premium Windbreaker",
-      price: 135000,
-      image: "/black-windbreaker-premium-streetwear.jpg",
-      category: "Outerwear",
-      badge: "NEW",
-      rating: 4.7,
-      reviews: 67,
-    },
-  ]
+export default async function HomePage() {
+  const latestProducts = await db.query.products.findMany({
+    where: eq(products.isActive, true),
+    orderBy: [desc(products.createdAt)],
+    limit: 8,
+  })
+
+  const featuredProducts = latestProducts.map((p) => ({
+    id: p.id,
+    name: p.name,
+    price: Number(p.price),
+    originalPrice: p.originalPrice ? Number(p.originalPrice) : undefined,
+    image: p.images && p.images.length > 0 ? p.images[0] : "/placeholder.svg",
+    category: p.category || "General",
+    badge: (p.stockCount || 0) < 5 ? "LOW STOCK" : "NEW",
+    rating: 4.8,
+    reviews: 124,
+  }))
+
 
   const collections = [
     {
@@ -115,16 +52,16 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white text-black">
-      <Header />
 
       {/* Hero Section */}
       <section className="relative h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-neutral-100 via-white to-neutral-50">
         <div className="absolute inset-0 opacity-[0.07]">
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{
-              backgroundImage: "url('/luxury-streetwear-model-black-clothing-urban-fashi.jpg')",
-            }}
+          <Image
+            src="/luxury-streetwear-model-black-clothing-urban-fashi.jpg"
+            alt="Background pattern"
+            fill
+            className="object-cover object-center"
+            priority
           />
         </div>
 
@@ -263,10 +200,11 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Image Side - Hidden on Mobile */}
             <div className="hidden lg:block relative h-[600px] rounded-2xl overflow-hidden">
-              <img
+              <Image
                 src="/luxury-streetwear-brand-photography-black-and-whit.jpg"
                 alt="Eddie Originals Brand Story"
-                className="absolute inset-0 w-full h-full object-cover opacity-90"
+                fill
+                className="object-cover opacity-90"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-40" />
             </div>
@@ -323,12 +261,13 @@ export default function HomePage() {
               <Link
                 key={index}
                 href={collection.link}
-                className="group relative h-[500px] rounded-xl overflow-hidden bg-black"
+                className="group relative h-[500px] rounded-xl overflow-hidden bg-black block"
               >
-                <img
+                <Image
                   src={collection.image || "/placeholder.svg"}
                   alt={collection.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 opacity-60"
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-110 opacity-60"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
@@ -417,12 +356,13 @@ export default function HomePage() {
                 key={i}
                 href="https://instagram.com/eddie_originals_"
                 target="_blank"
-                className="relative aspect-square bg-neutral-100 rounded-lg overflow-hidden group"
+                className="relative aspect-square bg-neutral-100 rounded-lg overflow-hidden group block"
               >
-                <img
+                <Image
                   src={`/streetwear-instagram-post-.jpg?height=400&width=400&query=streetwear+instagram+post+${i}`}
                   alt={`Instagram post ${i}`}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                  fill
+                  className="object-cover transition-transform duration-300 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
                   <Instagram className="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -456,7 +396,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      <Footer />
     </div>
   )
 }
