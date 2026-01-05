@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
+import { TurnstileWidget } from "@/components/turnstile-widget"
 
 export function Newsletter() {
   const [email, setEmail] = useState("")
   const [loading, setLoading] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState<string>("")
   const { toast } = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -21,7 +23,7 @@ export function Newsletter() {
       const res = await fetch("/api/newsletter/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, token: turnstileToken }),
       })
 
       const data = await res.json()
@@ -44,6 +46,9 @@ export function Newsletter() {
         description: "You have been subscribed to our newsletter.",
       })
       setEmail("")
+      // Note: Turnstile token is single-use. The widget usually resets automatically or needs a manual reset.
+      // Since we're clearing the form, we can just let the user verify again if they subscribe with another email immediately.
+      setTurnstileToken("")
     } catch (error: any) {
       toast({
         title: "Error",
@@ -63,23 +68,26 @@ export function Newsletter() {
           Subscribe to get special offers, free giveaways, and exclusive drops.
         </p>
 
-        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-md mx-auto w-full">
-          <Input
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="bg-white border-black/20 text-black placeholder:text-black/40 focus:border-black h-12 w-full"
-            required
-          />
-          <Button
-            type="submit"
-            className="bg-black text-white hover:bg-black/90 h-12 px-8 tracking-wider whitespace-nowrap w-full sm:w-auto"
-            disabled={loading}
-          >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-            SUBSCRIBE
-          </Button>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-md mx-auto w-full">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full">
+            <Input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="bg-white border-black/20 text-black placeholder:text-black/40 focus:border-black h-12 w-full"
+              required
+            />
+            <Button
+              type="submit"
+              className="bg-black text-white hover:bg-black/90 h-12 px-8 tracking-wider whitespace-nowrap w-full sm:w-auto"
+              disabled={loading}
+            >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              SUBSCRIBE
+            </Button>
+          </div>
+          <TurnstileWidget onVerify={(token) => setTurnstileToken(token)} />
         </form>
       </div>
     </section>

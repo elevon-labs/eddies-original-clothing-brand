@@ -7,6 +7,7 @@ import { db } from "@/db"
 import { products } from "@/db/schema"
 import { and, desc, eq, gt } from "drizzle-orm"
 import { Product } from "@/types"
+import { Newsletter } from "@/components/newsletter"
 
 // Force dynamic rendering to ensure fresh data
 export const dynamic = 'force-dynamic'
@@ -29,7 +30,7 @@ export default async function NewArrivalsPage() {
     .orderBy(desc(products.createdAt))
 
   // Map database results to Product interface
-  const recentProducts: Product[] = recentProductsData.map((p) => ({
+  const recentProducts: Product[] = recentProductsData.map((p: typeof products.$inferSelect) => ({
     id: p.id,
     name: p.name,
     price: p.price,
@@ -117,6 +118,8 @@ export default async function NewArrivalsPage() {
           </div>
         </div>
       </div>
+
+      <Newsletter />
     </div>
   )
 }

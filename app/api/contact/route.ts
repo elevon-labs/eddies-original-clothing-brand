@@ -2,14 +2,34 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { messages } from "@/db/schema";
 import { sendAdminNotificationEmail } from "@/lib/mail";
+import { rateLimit } from "@/lib/rate-limit";
+import { verifyTurnstile } from "@/lib/verify-turnstile";
 
 export async function POST(request: Request) {
   try {
+    // 1. Rate Limiting (IP-based)
+    const ip = request.headers.get("x-forwarded-for") || "unknown";
+    const isAllowed = await rateLimit(`contact_${ip}`, 3, 60); // 3 requests per minute (stricter than newsletter)
+
+    if (!isAllowed) {
+      return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
+    }
+
     const body = await request.json();
-    const { name, email, subject, message } = body;
+    const { name, email, subject, message, token } = body;
 
     if (!name || !email || !message) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    // 2. Turnstile Verification
+    if (token) {
+      const isHuman = await verifyTurnstile(token);
+      if (!isHuman) {
+        return NextResponse.json({ error: "Security check failed. Please try again." }, { status: 400 });
+      }
+    } else if (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) {
+      return NextResponse.json({ error: "Security check required." }, { status: 400 });
     }
 
     await db.insert(messages).values({
