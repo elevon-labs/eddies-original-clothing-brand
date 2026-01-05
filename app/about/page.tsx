@@ -1,6 +1,12 @@
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "About Us",
+  description: "Learn about Eddie Originals - a luxury streetwear brand born in Lagos, Nigeria. Our story of confidence, creativity, and identity.",
+}
 
 export default function AboutPage() {
   return (

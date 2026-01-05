@@ -1,4 +1,10 @@
 import { LayoutWrapper } from "@/components/layout-wrapper"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description: "Privacy Policy for Eddie Originals. How we collect, use, and protect your data.",
+}
 
 export default function PrivacyPolicyPage() {
   return (

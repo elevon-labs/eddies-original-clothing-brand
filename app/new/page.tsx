@@ -8,6 +8,12 @@ import { products } from "@/db/schema"
 import { and, desc, eq, gt } from "drizzle-orm"
 import { Product } from "@/types"
 import { Newsletter } from "@/components/newsletter"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "New Arrivals",
+  description: "Check out the latest drops from Eddie Originals. Fresh streetwear styles just landed.",
+}
 
 // Force dynamic rendering to ensure fresh data
 export const dynamic = 'force-dynamic'

@@ -1,361 +1,88 @@
-"use client"
-
-import Image from "next/image"
+import { Metadata } from "next"
+import { notFound } from "next/navigation"
+import { db } from "@/db"
+import { products } from "@/db/schema"
+import { eq } from "drizzle-orm"
+import { ProductDetailsClient } from "@/components/product-details-client"
 import { Product } from "@/types"
-import { useState, useEffect, use } from "react"
-import { Button } from "@/components/ui/button"
-import { useCart } from "@/components/cart-provider"
-import { Skeleton } from "@/components/ui/skeleton"
-import { ProductCard } from "@/components/product-card"
-import { ProductReviews } from "@/components/product-reviews"
-import { Star, Truck, RotateCcw, Shield, ChevronDown, ChevronUp } from "lucide-react"
 
-export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
-  const { addItem } = useCart()
-  const [quantity, setQuantity] = useState(1)
-  const [loading, setLoading] = useState(true)
-  const [selectedSize, setSelectedSize] = useState("")
-  const [selectedColor, setSelectedColor] = useState("")
-  const [selectedImage, setSelectedImage] = useState(0)
-  const [showShipping, setShowShipping] = useState(false)
-  const [product, setProduct] = useState<Product | null>(null)
-  const [showDescription, setShowDescription] = useState(true)
-  const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
+interface Props {
+  params: Promise<{ id: string }>
+}
 
-  useEffect(() => {
-    async function fetchProduct() {
-      try {
-        const res = await fetch(`/api/products/${id}`)
-        if (res.ok) {
-          const data = await res.json()
-          setProduct({
-            ...data,
-            // Ensure compatibility with the UI
-            images: data.images && data.images.length > 0 ? data.images : ["/placeholder.svg"],
-            rating: data.averageRating ? data.averageRating / 10 : 0, 
-            reviews: data.reviewCount || 0,
-            inStock: data.stockCount > 0
-          })
-        }
-      } catch (e) {
-        console.error("Failed to fetch product", e)
-      } finally {
-        setLoading(false)
-      }
-    }
-    if (id) {
-      fetchProduct()
-    }
-  }, [id])
-
-  useEffect(() => {
-    async function fetchRelated() {
-      if (!product) return
-      try {
-        let url = `/api/products?excludeId=${product.id}&limit=4`
-        if (product.collection) {
-          url += `&collection=${encodeURIComponent(product.collection)}`
-        }
-        const res = await fetch(url)
-        if (res.ok) {
-          const data = await res.json()
-          setRelatedProducts(
-            data.map((p: any) => ({
-              ...p,
-              images: p.images && p.images.length > 0 ? p.images : ["/placeholder.svg"],
-              rating: p.averageRating ? p.averageRating / 10 : 0,
-              reviews: p.reviewCount || 0,
-              inStock: p.stockCount > 0,
-            }))
-          )
-        }
-      } catch (e) {
-        console.error("Failed to fetch related products", e)
-      }
-    }
-    if (product) {
-      fetchRelated()
-    }
-  }, [product])
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-white pt-8 pb-20 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-8 md:gap-12">
-          <Skeleton className="aspect-[3/4] w-full rounded-lg bg-neutral-200" />
-          <div className="space-y-6">
-            <Skeleton className="h-4 w-24 bg-neutral-200" />
-            <Skeleton className="h-12 w-3/4 bg-neutral-200" />
-            <Skeleton className="h-6 w-1/3 bg-neutral-200" />
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-full bg-neutral-200" />
-              <Skeleton className="h-4 w-full bg-neutral-200" />
-              <Skeleton className="h-4 w-2/3 bg-neutral-200" />
-            </div>
-            <Skeleton className="h-14 w-full bg-neutral-200" />
-          </div>
-        </div>
-      </div>
-    )
-  }
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params
+  const product = await db.query.products.findFirst({
+    where: eq(products.id, id),
+  })
 
   if (!product) {
-    return <div className="min-h-screen flex items-center justify-center">Product not found</div>
-  }
-
-  const handleAddToCart = () => {
-    if (!selectedSize) {
-      alert("Please select a size")
-      return
+    return {
+      title: "Product Not Found",
     }
-    addItem({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.images ? product.images[0] : "",
-      quantity: quantity,
-      size: selectedSize,
-    })
   }
 
-  const discountPercent = product.originalPrice
-    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
-    : 0
+  const images = product.images as string[]
+  const mainImage = images && images.length > 0 ? images[0] : "/placeholder.svg"
 
-  return (
-    <div className="min-h-screen bg-white text-black">
-      
-      <div className="pt-8 pb-20 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto">
-          {/* Product Details */}
-          <div className="grid md:grid-cols-2 gap-8 md:gap-12 mb-24">
-            {/* Images */}
-            <div>
-              <div className="relative aspect-square bg-neutral-100 rounded-lg overflow-hidden mb-4">
-                <Image
-                  src={product.images?.[selectedImage] || "/placeholder.svg"}
-                  alt={product.name}
-                  fill
-                  className="object-cover"
-                />
-                {discountPercent > 0 && (
-                  <div className="absolute top-4 left-4">
-                    <span className="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                      -{discountPercent}% OFF
-                    </span>
-                  </div>
-                )}
-              </div>
-              <div className="grid grid-cols-4 gap-4">
-                {product.images?.map((img: string, idx: number) => (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedImage(idx)}
-                    className={`relative aspect-square bg-neutral-100 rounded-lg overflow-hidden ${
-                      selectedImage === idx ? "ring-2 ring-black" : ""
-                    }`}
-                  >
-                    <Image
-                      src={img || "/placeholder.svg"}
-                      alt={`${product.name} ${idx + 1}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </button>
-                ))}
-              </div>
-            </div>
+  return {
+    title: product.name,
+    description: product.description || `Buy ${product.name} at Eddie Originals`,
+    openGraph: {
+      title: product.name,
+      description: product.description || `Buy ${product.name} at Eddie Originals`,
+      images: [
+        {
+          url: mainImage,
+          width: 800,
+          height: 800,
+          alt: product.name,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: product.name,
+      description: product.description || `Buy ${product.name} at Eddie Originals`,
+      images: [mainImage],
+    },
+  }
+}
 
-            {/* Details */}
-            <div>
-              <div className="mb-2">
-                <span className="text-xs tracking-wider text-black/50 uppercase">{product.category}</span>
-              </div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">{product.name}</h1>
+export default async function ProductPage({ params }: Props) {
+  const { id } = await params
+  const productData = await db.query.products.findFirst({
+    where: eq(products.id, id),
+  })
 
-              {/* Rating */}
-              <div className="flex items-center gap-3 mb-6">
-                <div className="flex items-center gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-5 w-5 ${i < Math.floor(product.rating || 0) ? "fill-black text-black" : "text-black/20"}`}
-                    />
-                  ))}
-                </div>
-                <span className="text-sm font-semibold">{product.rating}</span>
-                <span className="text-sm text-black/50">({product.reviews} reviews)</span>
-              </div>
+  if (!productData) {
+    notFound()
+  }
 
-              {/* Price */}
-              <div className="flex items-center gap-3 mb-8">
-                <span className="text-3xl font-bold">₦{product.price.toLocaleString()}</span>
-                {product.originalPrice && (
-                  <span className="text-xl text-black/40 line-through">₦{product.originalPrice.toLocaleString()}</span>
-                )}
-              </div>
+  // Transform to match Product interface
+  const product: Product = {
+    id: productData.id,
+    name: productData.name,
+    price: productData.price,
+    originalPrice: productData.originalPrice,
+    description: productData.description,
+    image: (productData.images as string[])?.[0] || "/placeholder.svg",
+    images: (productData.images as string[]) || [],
+    category: productData.category,
+    collection: productData.collection,
+    stockCount: productData.stockCount || 0,
+    isActive: productData.isActive || false,
+    sizes: (productData.sizes as string[]) || [],
+    colors: (productData.colors as { name: string; hex: string }[]) || [],
+    reviews: productData.reviewCount || 0,
+    rating: productData.averageRating ? productData.averageRating / 10 : 0, // Assuming stored as integer 0-50? API code didn't show div 10 but original page did
+    createdAt: productData.createdAt || undefined,
+  }
 
-              {/* Size Selection */}
-              <div className="mb-6">
-                <div className="flex justify-between items-center mb-3">
-                  <label className="font-bold text-sm tracking-wider">SELECT SIZE</label>
-                </div>
-                <div className="grid grid-cols-6 gap-2">
-                  {product.sizes?.map((size: string) => (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      className={`py-3 text-sm font-semibold border-2 rounded-lg transition-colors ${
-                        selectedSize === size
-                          ? "border-black bg-black text-white"
-                          : "border-black/20 hover:border-black"
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
-              </div>
+  // Double check rating logic from original page:
+  // rating: data.averageRating ? data.averageRating / 10 : 0, 
+  // If I look at the schema: averageRating: integer("average_rating").default(0),
+  // If it's 48 (4.8 stars), then /10 is correct.
 
-              {/* Color Selection */}
-              <div className="mb-6">
-                <label className="font-bold text-sm tracking-wider mb-3 block">SELECT COLOR</label>
-                <div className="flex gap-3">
-                  {product.colors?.map((color) => (
-                    <button
-                      key={color.name}
-                      onClick={() => setSelectedColor(color.name)}
-                      className={`w-10 h-10 rounded-full border-2 transition-all ${
-                        selectedColor === color.name
-                          ? "border-black scale-110 ring-2 ring-black ring-offset-2"
-                          : "border-black/10 hover:border-black"
-                      }`}
-                      style={{ backgroundColor: color.hex }}
-                      title={color.name}
-                      aria-label={`Select color ${color.name}`}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Quantity */}
-              <div className="mb-6">
-                <label className="font-bold text-sm tracking-wider mb-3 block">QUANTITY</label>
-                <div className="flex items-center gap-3">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="bg-transparent"
-                  >
-                    -
-                  </Button>
-                  <span className="text-lg font-semibold w-12 text-center">{quantity}</span>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="bg-transparent"
-                  >
-                    +
-                  </Button>
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-3 mb-8">
-                <Button
-                  size="lg"
-                  onClick={handleAddToCart}
-                  className="w-full bg-black text-white hover:bg-black/90 font-semibold tracking-wide h-14"
-                >
-                  ADD TO CART
-                </Button>
-              </div>
-
-              {/* Features */}
-              <div className="space-y-4 mb-8 pb-8 border-b border-black/10">
-                <div className="flex items-center gap-3">
-                  <Truck className="h-5 w-5 text-black/60" />
-                  <span className="text-sm">Fast nationwide delivery</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <RotateCcw className="h-5 w-5 text-black/60" />
-                  <span className="text-sm">No refund policy</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Shield className="h-5 w-5 text-black/60" />
-                  <span className="text-sm">Authentic Eddie Originals guarantee</span>
-                </div>
-              </div>
-
-              {/* Accordion Sections */}
-              <div className="space-y-4">
-                <div className="border-b border-black/10">
-                  <button
-                    onClick={() => setShowDescription(!showDescription)}
-                    className="w-full py-4 flex justify-between items-center font-bold text-sm tracking-wider"
-                  >
-                    DESCRIPTION
-                    {showDescription ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-                  </button>
-                  {showDescription && (
-                    <div className="pb-4 text-black/70 leading-relaxed">
-                      <p className="mb-4">{product.description}</p>
-                      <ul className="list-disc list-inside space-y-2 text-sm">
-                        <li>100% Premium Cotton</li>
-                        <li>320gsm Heavyweight Fabric</li>
-                        <li>Oversized Relaxed Fit</li>
-                        <li>Dropped Shoulders</li>
-                        <li>Signature Eddie Originals Branding</li>
-                        <li>Pre-shrunk for Perfect Fit</li>
-                      </ul>
-                    </div>
-                  )}
-                </div>
-
-                <div className="border-b border-black/10">
-                  <button
-                    onClick={() => setShowShipping(!showShipping)}
-                    className="w-full py-4 flex justify-between items-center font-bold text-sm tracking-wider"
-                  >
-                    SHIPPING & RETURNS
-                    {showShipping ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-                  </button>
-                  {showShipping && (
-                    <div className="pb-4 text-black/70 leading-relaxed text-sm space-y-2">
-                      <p>
-                        <strong>Shipping:</strong> Standard delivery takes 3-5 business days within Lagos and 5-7 business days nationwide.
-                      </p>
-                      <p>
-                        <strong>Returns:</strong> All sales are final. No refunds or exchanges.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Reviews Section */}
-          <ProductReviews productId={product.id} />
-
-          {/* Related Products */}
-          <section>
-            <div className="mb-12">
-              <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">You Might Also Like</h2>
-              <p className="text-lg text-black/60">Complete your look with these pieces</p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {relatedProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          </section>
-        </div>
-      </div>
-
-    </div>
-  )
+  return <ProductDetailsClient initialProduct={product} />
 }

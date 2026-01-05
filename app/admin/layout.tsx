@@ -4,6 +4,15 @@ import { redirect } from "next/navigation"
 import { db } from "@/db"
 import { users } from "@/db/schema"
 import { eq } from "drizzle-orm"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Admin Dashboard",
+  robots: {
+    index: false,
+    follow: false,
+  },
+}
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
   const session = await auth()
