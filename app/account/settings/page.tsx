@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { useSession, signOut } from "next-auth/react"
-import { Loader2, LogOut, User, ShieldCheck, Plus, Trash2, MapPin, Check } from "lucide-react"
+import { Loader2, LogOut, User, ShieldCheck, Plus, Trash2, MapPin, Check, Eye, EyeOff, Info } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -51,6 +51,7 @@ export default function SettingsPage() {
   
   // Profile State
   const [isProfileLoading, setIsProfileLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   
   // Address State
   const [addresses, setAddresses] = useState<Address[]>([])
@@ -272,15 +273,31 @@ export default function SettingsPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="password">New Password</Label>
-                    <Input 
-                      id="password" 
-                      type="password" 
-                      placeholder="Leave blank to keep current" 
-                      {...profileForm.register("password")} 
-                    />
+                    <div className="relative">
+                      <Input 
+                        id="password" 
+                        type={showPassword ? "text" : "password"} 
+                        placeholder="Leave blank to keep current" 
+                        {...profileForm.register("password")}
+                        className="pr-10" 
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-black transition-colors"
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
                     {profileForm.formState.errors.password && (
                       <p className="text-sm text-red-500">{profileForm.formState.errors.password.message}</p>
                     )}
+                    <div className="flex gap-3 pt-2">
+                      <Info className="h-4 w-4 text-black/40 mt-0.5 shrink-0" />
+                      <p className="text-xs text-black/60 leading-relaxed">
+                        Updating this field will permanently change your login credentials. Please ensure you have securely recorded your new password.
+                      </p>
+                    </div>
                   </div>
                 </div>
                 <Button type="submit" disabled={isProfileLoading}>

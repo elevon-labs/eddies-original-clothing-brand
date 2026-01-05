@@ -130,7 +130,7 @@ export const orders = pgTable("order", {
   status: text("status").default("pending"), // pending, paid, shipped, delivered, cancelled
   total: integer("total").notNull(),
   currency: text("currency").default("NGN"),
-  stripePaymentIntentId: text("stripe_payment_intent_id"),
+  paystackReference: text("paystack_reference"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
   
