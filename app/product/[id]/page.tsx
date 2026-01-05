@@ -1,27 +1,27 @@
 "use client"
 
+import Image from "next/image"
+import { Product } from "@/types"
 import { useState, useEffect, use } from "react"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/components/cart-provider"
-import { Heart, Star, Truck, RotateCcw, Shield, ChevronDown, ChevronUp } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
 import { ProductCard } from "@/components/product-card"
 import { ProductReviews } from "@/components/product-reviews"
-import Image from "next/image"
-import { Product } from "@/types"
-import { Skeleton } from "@/components/ui/skeleton"
+import { Star, Truck, RotateCcw, Shield, ChevronDown, ChevronUp } from "lucide-react"
 
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
-  const [product, setProduct] = useState<Product | null>(null)
+  const { addItem } = useCart()
+  const [quantity, setQuantity] = useState(1)
   const [loading, setLoading] = useState(true)
   const [selectedSize, setSelectedSize] = useState("")
   const [selectedColor, setSelectedColor] = useState("")
-  const [quantity, setQuantity] = useState(1)
-  const [isWishlisted, setIsWishlisted] = useState(false)
   const [selectedImage, setSelectedImage] = useState(0)
-  const [showDescription, setShowDescription] = useState(true)
   const [showShipping, setShowShipping] = useState(false)
-  const { addItem } = useCart()
+  const [product, setProduct] = useState<Product | null>(null)
+  const [showDescription, setShowDescription] = useState(true)
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
 
   useEffect(() => {
     async function fetchProduct() {
@@ -49,6 +49,36 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
     }
   }, [id])
 
+  useEffect(() => {
+    async function fetchRelated() {
+      if (!product) return
+      try {
+        let url = `/api/products?excludeId=${product.id}&limit=4`
+        if (product.collection) {
+          url += `&collection=${encodeURIComponent(product.collection)}`
+        }
+        const res = await fetch(url)
+        if (res.ok) {
+          const data = await res.json()
+          setRelatedProducts(
+            data.map((p: any) => ({
+              ...p,
+              images: p.images && p.images.length > 0 ? p.images : ["/placeholder.svg"],
+              rating: p.averageRating ? p.averageRating / 10 : 0,
+              reviews: p.reviewCount || 0,
+              inStock: p.stockCount > 0,
+            }))
+          )
+        }
+      } catch (e) {
+        console.error("Failed to fetch related products", e)
+      }
+    }
+    if (product) {
+      fetchRelated()
+    }
+  }, [product])
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white pt-8 pb-20 px-4 sm:px-6">
@@ -73,49 +103,6 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   if (!product) {
     return <div className="min-h-screen flex items-center justify-center">Product not found</div>
   }
-
-  // Mock related products (or fetch real ones if API supports it)
-  const relatedProducts = [
-    {
-      id: "2",
-      name: "Premium Cargo Pants",
-      price: 85000,
-      image: "/black-cargo-streetwear.png",
-      category: "Bottoms",
-      rating: 4.9,
-      reviews: 89,
-    },
-    {
-      id: "3",
-      name: "Statement Hoodie",
-      price: 95000,
-      originalPrice: 120000,
-      image: "/black-hoodie-luxury-street-fashion.jpg",
-      category: "Tops",
-      badge: "SALE",
-      rating: 4.7,
-      reviews: 156,
-    },
-    {
-      id: "4",
-      name: "Essential Track Jacket",
-      price: 120000,
-      image: "/black-track-jacket-modern-streetwear.jpg",
-      category: "Outerwear",
-      rating: 4.6,
-      reviews: 73,
-    },
-    {
-      id: "5",
-      name: "Urban Bomber Jacket",
-      price: 145000,
-      image: "/black-bomber-streetwear.png",
-      category: "Outerwear",
-      badge: "EXCLUSIVE",
-      rating: 4.9,
-      reviews: 45,
-    },
-  ]
 
   const handleAddToCart = () => {
     if (!selectedSize) {
