@@ -1,79 +1,43 @@
-"use client"
-
+import { redirect } from "next/navigation"
 import Link from "next/link"
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { useSession, signOut } from "next-auth/react"
-import { Loader2, LogOut, User, Mail, ShieldCheck, Package, ShoppingBag, ChevronRight } from "lucide-react"
+import { auth } from "@/lib/auth"
+import { db } from "@/db"
+import { orders, orderItems } from "@/db/schema"
+import { eq, desc, type InferSelectModel } from "drizzle-orm"
+import { User, Mail, ShieldCheck, Package, ShoppingBag, ChevronRight } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
+import { SignOutButton } from "@/components/sign-out-button"
 
-type OrderItem = {
-  id: string
-  productName: string
-  quantity: number
-  price: number
-  selectedSize?: string
-  selectedColor?: string
+type OrderWithItems = InferSelectModel<typeof orders> & {
+  items: InferSelectModel<typeof orderItems>[]
 }
 
-type Order = {
-  id: string
-  status: string
-  total: number
-  currency: string
-  createdAt: string
-  items: OrderItem[]
+export const metadata = {
+  title: "My Profile | Eddie Originals",
+  description: "Manage your personal information and view order history.",
 }
 
-export default function AccountPage() {
-  const { data: session, status } = useSession()
-  const router = useRouter()
-  const [orders, setOrders] = useState<Order[]>([])
-  const [isOrdersLoading, setIsOrdersLoading] = useState(true)
+export default async function AccountPage() {
+  const session = await auth()
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/account/login")
-    }
-  }, [status, router])
-
-  useEffect(() => {
-    if (status === "authenticated") {
-      fetchOrders()
-    }
-  }, [status])
-
-  const fetchOrders = async () => {
-    try {
-      const res = await fetch("/api/orders")
-      if (res.ok) {
-        const data = await res.json()
-        setOrders(data)
-      }
-    } catch (error) {
-      console.error("Failed to fetch orders", error)
-    } finally {
-      setIsOrdersLoading(false)
-    }
+  if (!session || !session.user || !session.user.id) {
+    redirect("/account/login")
   }
 
-  if (status === "loading") {
-    return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-neutral-400" />
-      </div>
-    )
-  }
+  // Fetch orders directly from database
+  const userOrders = await db.query.orders.findMany({
+    where: eq(orders.userId, session.user.id),
+    orderBy: [desc(orders.createdAt)],
+    with: {
+      items: true,
+    },
+  }) as OrderWithItems[]
 
-  if (!session) {
-    return null
-  }
-
-  const userInitials = session.user?.name
+  const userInitials = session.user.name
     ? session.user.name
         .split(" ")
         .map((n) => n[0])
@@ -89,12 +53,12 @@ export default function AccountPage() {
         <aside className="w-full md:w-64 space-y-6 shrink-0">
           <div className="flex items-center gap-4 p-4 border border-black/5 rounded-xl bg-white shadow-sm">
             <Avatar className="h-12 w-12 border border-black/10 shrink-0">
-              <AvatarImage src={session.user?.image || ""} alt={session.user?.name || ""} />
+              <AvatarImage src={session.user.image || ""} alt={session.user.name || ""} />
               <AvatarFallback className="bg-white text-black font-medium">{userInitials}</AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <p className="font-semibold text-sm truncate text-black">{session.user?.name}</p>
-              <p className="text-xs text-neutral-500 truncate">{session.user?.email}</p>
+              <p className="font-semibold text-sm truncate text-black">{session.user.name}</p>
+              <p className="text-xs text-neutral-500 truncate">{session.user.email}</p>
             </div>
           </div>
           
@@ -112,14 +76,7 @@ export default function AccountPage() {
               </Link>
             </Button>
             <div className="pt-4 mt-4 border-t border-black/5">
-              <Button 
-                variant="ghost" 
-                className="w-full justify-start h-10 font-medium text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors"
-                onClick={() => signOut({ callbackUrl: "/" })}
-              >
-                <LogOut className="mr-3 h-4 w-4" />
-                Log out
-              </Button>
+              <SignOutButton />
             </div>
           </nav>
         </aside>
@@ -146,7 +103,7 @@ export default function AccountPage() {
                     Full Name
                   </label>
                   <div className="flex h-11 w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-black shadow-sm items-center">
-                    {session.user?.name}
+                    {session.user.name}
                   </div>
                 </div>
                 <div className="space-y-2.5">
@@ -154,7 +111,7 @@ export default function AccountPage() {
                     Email Address
                   </label>
                   <div className="flex h-11 w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-black shadow-sm items-center">
-                    {session.user?.email}
+                    {session.user.email}
                   </div>
                 </div>
               </div>
@@ -167,7 +124,7 @@ export default function AccountPage() {
                   <div>
                     <p className="text-sm font-medium text-black">Authentication Method</p>
                     <p className="text-sm text-neutral-500 mt-0.5">
-                      You are currently signed in via <span className="font-medium text-black">{session.user?.image?.includes("google") ? "Google" : "Email & Password"}</span>.
+                      You are currently signed in via <span className="font-medium text-black">{session.user.image?.includes("google") ? "Google" : "Email & Password"}</span>.
                     </p>
                   </div>
                 </div>
@@ -182,11 +139,7 @@ export default function AccountPage() {
               <p className="text-sm text-neutral-500 mt-1">View and track your past orders.</p>
             </div>
             <CardContent className="p-6">
-              {isOrdersLoading ? (
-                <div className="flex justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-neutral-400" />
-                </div>
-              ) : orders.length === 0 ? (
+              {userOrders.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="bg-neutral-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                     <ShoppingBag className="h-8 w-8 text-neutral-300" />
@@ -201,14 +154,14 @@ export default function AccountPage() {
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {orders.map((order) => (
+                  {userOrders.map((order) => (
                     <div key={order.id} className="border border-black/10 rounded-lg overflow-hidden">
                       <div className="bg-neutral-50/50 p-4 border-b border-black/5 flex flex-wrap items-center justify-between gap-4">
                         <div className="flex items-center gap-6 text-sm">
                           <div>
                             <p className="text-neutral-500 mb-0.5">Order Placed</p>
                             <p className="font-medium text-black">
-                              {format(new Date(order.createdAt), "MMM d, yyyy")}
+                              {order.createdAt ? format(new Date(order.createdAt), "MMM d, yyyy") : "N/A"}
                             </p>
                           </div>
                           <div>
@@ -225,7 +178,7 @@ export default function AccountPage() {
                               order.status === "delivered" ? "outline" : 
                               "destructive"
                             } className="capitalize">
-                              {order.status}
+                              {order.status || "Unknown"}
                             </Badge>
                           </div>
                         </div>
