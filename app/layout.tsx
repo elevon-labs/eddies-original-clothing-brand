@@ -1,7 +1,18 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Analytics } from "@vercel/analytics/next"
+import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+})
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+})
 import { CartProvider } from "@/components/cart-provider"
 import { SessionProvider } from "@/components/providers/session-provider"
 import { Toaster } from "@/components/ui/toaster"
@@ -46,7 +57,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className={`font-sans antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
         <SessionProvider session={session}>
           <CartProvider>
             <LayoutWrapper header={<Header />} footer={<Footer />}>
