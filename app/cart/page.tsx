@@ -1,7 +1,5 @@
 "use client"
 
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/components/cart-provider"
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, Check } from "lucide-react"
@@ -17,7 +15,7 @@ export default function CartPage() {
   if (items.length === 0) {
     return (
       <div className="min-h-screen bg-white text-black">
-        <Header />
+        
         <div className="pt-20 pb-32 px-6">
           <div className="max-w-2xl mx-auto text-center">
             <div className="mb-8 inline-flex items-center justify-center w-24 h-24 bg-neutral-100 rounded-full">
@@ -39,15 +37,13 @@ export default function CartPage() {
             </Button>
           </div>
         </div>
-        <Footer />
       </div>
     )
   }
 
   return (
     <div className="min-h-screen bg-white text-black">
-      <Header />
-
+      
       <div className="pt-8 pb-20 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-2 tracking-tight">Shopping Cart</h1>
@@ -186,7 +182,6 @@ export default function CartPage() {
         </div>
       </div>
 
-      <Footer />
     </div>
   )
 }

@@ -1,7 +1,5 @@
 "use client"
 
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
 import Link from "next/link"
@@ -44,8 +42,7 @@ export default function CollectionsPage() {
 
   return (
     <div className="min-h-screen bg-white text-black">
-      <Header />
-
+      
       {/* Hero Section */}
       <section className="relative h-[50vh] flex items-center justify-center overflow-hidden bg-neutral-900 text-white">
          <div className="absolute inset-0 opacity-50">
@@ -111,9 +108,6 @@ export default function CollectionsPage() {
         </div>
       </section>
 
-
-
-      <Footer />
     </div>
   )
 }

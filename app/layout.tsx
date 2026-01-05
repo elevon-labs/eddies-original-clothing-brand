@@ -4,6 +4,12 @@ import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { CartProvider } from "@/components/cart-provider"
+import { SessionProvider } from "@/components/providers/session-provider"
+import { Toaster } from "@/components/ui/toaster"
+import { Header } from "@/components/header"
+import { Footer } from "@/components/footer"
+import { LayoutWrapper } from "@/components/layout-wrapper"
+import { auth } from "@/lib/auth"
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
@@ -33,15 +39,24 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const session = await auth()
+
   return (
     <html lang="en">
       <body className={`font-sans antialiased`}>
-        <CartProvider>{children}</CartProvider>
+        <SessionProvider session={session}>
+          <CartProvider>
+            <LayoutWrapper header={<Header />} footer={<Footer />}>
+              {children}
+            </LayoutWrapper>
+          </CartProvider>
+          <Toaster />
+        </SessionProvider>
         <Analytics />
       </body>
     </html>

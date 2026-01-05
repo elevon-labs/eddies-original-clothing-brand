@@ -4,7 +4,7 @@ import type React from "react"
 import { createContext, useContext, useState, useEffect } from "react"
 
 interface CartItem {
-  id: number
+  id: string
   name: string
   price: number
   image: string

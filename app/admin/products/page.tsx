@@ -2,7 +2,6 @@ import Link from "next/link"
 import type { Metadata } from "next"
 import { PlusCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { AdminLayout } from "@/components/admin/admin-layout"
 import { ProductsList } from "@/components/admin/products-list"
 
 export const metadata: Metadata = {
@@ -12,23 +11,21 @@ export const metadata: Metadata = {
 
 export default function AdminProductsPage() {
   return (
-    <AdminLayout>
-      <div className="space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Product Management</h1>
-            <p className="text-muted-foreground mt-2">Manage your product catalog and inventory</p>
-          </div>
-          <Button asChild className="bg-black text-white hover:bg-neutral-800 w-full sm:w-auto">
-            <Link href="/admin/products/new">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Add Product
-            </Link>
-          </Button>
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Product Management</h1>
+          <p className="text-muted-foreground mt-2">Manage your product catalog and inventory</p>
         </div>
-
-        <ProductsList />
+        <Button asChild className="bg-black text-white hover:bg-neutral-800 w-full sm:w-auto">
+          <Link href="/admin/products/new">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Add Product
+          </Link>
+        </Button>
       </div>
-    </AdminLayout>
+
+      <ProductsList />
+    </div>
   )
 }

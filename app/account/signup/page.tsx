@@ -7,12 +7,86 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { useState, useEffect } from "react"
 import { Eye, EyeOff } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { signIn } from "next-auth/react"
+import { useToast } from "@/hooks/use-toast"
+import { z } from "zod"
 
 import { AccountPolicyInfo } from "@/components/account-policy-info"
 
 export default function SignupPage() {
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
+  const { toast } = useToast()
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    // Password validation rules
+    const passwordSchema = z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .regex(/[0-9!@#$%^&*]/, "Password must contain at least one number or special character")
+
+    try {
+      passwordSchema.parse(password)
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Weak Password",
+          description: error.errors[0].message,
+          variant: "destructive",
+        })
+        return
+      }
+    }
+    
+    if (password !== confirmPassword) {
+      toast({
+        title: "Passwords do not match",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setLoading(true)
+
+    try {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || "Something went wrong")
+      }
+
+      toast({
+        title: "Account created!",
+        description: "Please check your email to verify your account.",
+      })
+
+      router.push("/account/check-email")
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // Ensure content is visible/centered on mobile mount
   useEffect(() => {
@@ -73,12 +147,15 @@ export default function SignupPage() {
                   </p>
                 </div>
 
-                <div className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-1.5">
                     <Label htmlFor="name" className="text-sm font-semibold text-black ml-1">Full Name</Label>
                     <Input  
                       id="name" 
-                      placeholder="John Doe" 
+                      placeholder="John Doe"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
                       className="h-11 border-black/10 focus-visible:ring-black bg-neutral-50 text-black placeholder:text-black/50 text-base"
                     />
                   </div>
@@ -88,6 +165,9 @@ export default function SignupPage() {
                       id="email" 
                       placeholder="name@example.com" 
                       type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
                       className="h-11 border-black/10 focus-visible:ring-black bg-neutral-50 text-base"
                     />
                   </div>
@@ -99,6 +179,9 @@ export default function SignupPage() {
                           id="password" 
                           type={showPassword ? "text" : "password"}
                           placeholder="••••••••"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
                           className="h-11 border-black/10 focus-visible:ring-black bg-neutral-50 pr-8 text-black placeholder:text-black/50 text-base"
                         />
                         <button
@@ -121,7 +204,10 @@ export default function SignupPage() {
                           id="confirm-password" 
                           type={showConfirmPassword ? "text" : "password"}
                           placeholder="••••••••"
-                          className="h-11 border-black/10 focus-visible:ring-black bg-neutral-50 pr-8 text-base"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          required
+                          className="h-11 border-black/10 focus-visible:ring-black bg-neutral-50 pr-8 text-black placeholder:text-black/50 text-base"
                         />
                         <button
                           type="button"
@@ -138,9 +224,10 @@ export default function SignupPage() {
                     </div>
                   </div>
 
-                  <Button className="w-full h-11 bg-black hover:bg-black/70 text-white font-medium tracking-wide rounded-lg cursor-pointer transition-colors text-base mt-2">
-                    CREATE ACCOUNT
+                  <Button disabled={loading} className="w-full h-11 bg-black hover:bg-black/70 text-white font-medium tracking-wide rounded-lg cursor-pointer transition-colors text-base mt-2">
+                    {loading ? "CREATING ACCOUNT..." : "CREATE ACCOUNT"}
                   </Button>
+                </form>
 
                   <div className="relative py-2">
                     <div className="absolute inset-0 flex items-center">
@@ -151,7 +238,7 @@ export default function SignupPage() {
                     </div>
                   </div>
 
-                  <Button variant="outline" className="w-full h-11 border-black/10 hover:bg-black/5 hover:text-black font-medium rounded-lg text-base">
+                  <Button variant="outline" onClick={() => signIn("google", { callbackUrl: "/" })} className="w-full h-11 border-black/10 hover:bg-black/5 hover:text-black font-medium rounded-lg text-base">
                     <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                       <path
                         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -194,7 +281,6 @@ export default function SignupPage() {
                     </Link>
                 </div>
               </div>
-            </div>
             
             <div className="hidden md:block">
               <AccountPolicyInfo />

@@ -1,5 +1,3 @@
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
@@ -7,8 +5,7 @@ import { ArrowRight } from "lucide-react"
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-white text-black">
-      <Header />
-
+      
       {/* Hero */}
       <section className="pt-20 pb-32 px-6 bg-gradient-to-br from-neutral-100 via-white to-neutral-50">
         <div className="max-w-4xl mx-auto text-center">
@@ -163,7 +160,6 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <Footer />
     </div>
   )
 }
