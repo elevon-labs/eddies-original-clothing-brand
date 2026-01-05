@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Star, Lock, ThumbsUp, MessageSquare, Loader2 } from "lucide-react"
+import { Star, Lock, Loader2 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 // Mock Data
@@ -384,11 +384,7 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
                 </p>
                 
                 <div className="flex items-center gap-4 text-xs text-neutral-500">
-                  {/* Helpful feature not yet implemented in backend */}
-                  {/* <button className="flex items-center gap-1.5 hover:text-black transition-colors">
-                    <ThumbsUp className="h-3.5 w-3.5" />
-                    Helpful
-                  </button> */}
+                  <span className="text-neutral-400">Verified Purchase</span>
                 </div>
               </div>
             ))}

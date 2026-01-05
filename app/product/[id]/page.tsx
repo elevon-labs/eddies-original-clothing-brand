@@ -117,7 +117,6 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
       quantity: quantity,
       size: selectedSize,
     })
-    console.log("[v0] Added to cart:", { product, size: selectedSize, quantity })
   }
 
   const discountPercent = product.originalPrice
