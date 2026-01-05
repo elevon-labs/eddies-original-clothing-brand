@@ -4,7 +4,7 @@ import { products } from "@/db/schema"
 import { eq } from "drizzle-orm"
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://eddieoriginals.com"
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://eddieoriginals-department.com"
 
   // Static routes
   const routes = [
