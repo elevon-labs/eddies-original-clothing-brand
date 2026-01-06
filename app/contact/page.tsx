@@ -10,10 +10,12 @@ import { Mail, Phone, MapPin, Instagram, Loader2 } from "lucide-react"
 import { TikTok } from "@/components/icons"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
+import { TurnstileWidget } from "@/components/turnstile-widget"
 
 export default function ContactPage() {
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState<string>("")
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -29,7 +31,7 @@ export default function ContactPage() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, token: turnstileToken }),
       })
       
       const data = await res.json()
@@ -41,6 +43,8 @@ export default function ContactPage() {
         description: "Thank you for contacting us. We'll get back to you soon.",
       })
       setFormData({ name: "", email: "", subject: "", message: "" })
+      // Reset Turnstile token
+      setTurnstileToken("")
     } catch (error) {
       toast({
         title: "Error",
@@ -128,6 +132,8 @@ export default function ContactPage() {
                     className="resize-none flex-1 min-h-[200px] text-base"
                   />
                 </div>
+
+                <TurnstileWidget onVerify={(token) => setTurnstileToken(token)} />
 
                 <Button
                   type="submit"

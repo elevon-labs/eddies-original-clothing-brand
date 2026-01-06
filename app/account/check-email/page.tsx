@@ -14,6 +14,10 @@ export default function CheckEmailPage() {
         <h1 className="text-2xl font-bold tracking-tight mb-3">Check your email</h1>
         <p className="text-black/60 mb-8 leading-relaxed">
           We've sent a verification link to your email address. Please check your inbox and click the link to verify your account.
+          <br />
+          <span className="text-muted-foreground text-sm">
+            (Please check your spam or junk folder if you don't see it in your inbox)
+          </span>
         </p>
 
         <div className="space-y-4">

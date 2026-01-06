@@ -6,6 +6,7 @@ export interface Product {
   image: string
   images?: string[]
   category: string | null
+  collection?: string | null
   description?: string | null
   badge?: string | null
   rating?: number

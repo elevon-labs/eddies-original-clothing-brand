@@ -2,27 +2,41 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { products } from "@/db/schema";
-import { desc } from "drizzle-orm";
-
-import { eq } from "drizzle-orm";
+import { desc, eq, and, ne } from "drizzle-orm";
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const isActive = searchParams.get("isActive");
+    const collection = searchParams.get("collection");
+    const excludeId = searchParams.get("excludeId");
+    const limit = searchParams.get("limit") ? parseInt(searchParams.get("limit")!) : undefined;
 
-    let query = db.select().from(products).orderBy(desc(products.createdAt));
+    const conditions = [];
 
     if (isActive === "true") {
-      // @ts-ignore - Drizzle types might complain about where on a select result but it works if chained correctly, 
-      // but simpler to use query builder properly.
-      // Let's rewrite slightly for better type safety
-      const activeProducts = await db.select().from(products).where(eq(products.isActive, true)).orderBy(desc(products.createdAt));
-      return NextResponse.json(activeProducts);
+      conditions.push(eq(products.isActive, true));
+    }
+    
+    if (collection) {
+      conditions.push(eq(products.collection, collection));
     }
 
-    const allProducts = await db.select().from(products).orderBy(desc(products.createdAt));
-    return NextResponse.json(allProducts);
+    if (excludeId) {
+      conditions.push(ne(products.id, excludeId));
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    let query = db.select().from(products).where(whereClause).orderBy(desc(products.createdAt));
+
+    if (limit) {
+      // @ts-ignore
+      query = query.limit(limit);
+    }
+
+    const result = await query;
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Error fetching products:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
