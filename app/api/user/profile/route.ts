@@ -37,6 +37,22 @@ export async function PUT(req: Request) {
     const updateData: any = { name }
 
     if (password && password.length > 0) {
+      // Fetch current user to check password
+      const currentUser = await db.query.users.findFirst({
+        where: eq(users.email, session.user.email),
+        columns: { password: true }
+      })
+
+      if (currentUser && currentUser.password) {
+        const isSamePassword = await bcrypt.compare(password, currentUser.password)
+        if (isSamePassword) {
+          return NextResponse.json(
+            { error: "New password cannot be the same as the old password." },
+            { status: 400 }
+          )
+        }
+      }
+
       const hashedPassword = await bcrypt.hash(password, 10)
       updateData.password = hashedPassword
     }

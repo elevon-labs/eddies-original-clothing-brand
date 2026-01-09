@@ -5,6 +5,7 @@ import { Product } from "@/types"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/components/cart-provider"
+import { useToast } from "@/hooks/use-toast"
 import { ProductCard } from "@/components/product-card"
 import { ProductReviews } from "@/components/product-reviews"
 import { Star, Truck, RotateCcw, Shield, ChevronDown, ChevronUp, ShoppingBag } from "lucide-react"
@@ -25,6 +26,7 @@ interface ProductDetailsClientProps {
 
 export function ProductDetailsClient({ initialProduct }: ProductDetailsClientProps) {
   const { addItem } = useCart()
+  const { toast } = useToast()
   const [quantity, setQuantity] = useState(1)
   const [selectedSize, setSelectedSize] = useState("")
   const [selectedColor, setSelectedColor] = useState("")
@@ -71,10 +73,6 @@ export function ProductDetailsClient({ initialProduct }: ProductDetailsClientPro
   }, [product])
 
   const handleAddToCart = () => {
-    if (!selectedSize && product.sizes && product.sizes.length > 0) {
-      alert("Please select a size")
-      return
-    }
     addItem({
       id: product.id,
       name: product.name,
@@ -82,12 +80,25 @@ export function ProductDetailsClient({ initialProduct }: ProductDetailsClientPro
       image: product.images ? product.images[0] : "",
       quantity: quantity,
       size: selectedSize,
+      color: selectedColor,
+    })
+
+    toast({
+      title: "Added to Cart",
+      description: `${product.name} has been added to your cart.`,
     })
   }
 
   const discountPercent = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0
+
+  const isSizeRequired = product.sizes && product.sizes.length > 0
+  const isColorRequired = product.colors && product.colors.length > 0
+  
+  const isAddToCartDisabled = 
+    (isSizeRequired && !selectedSize) || 
+    (isColorRequired && !selectedColor)
 
   return (
     <div className="min-h-screen bg-white text-black">
@@ -166,7 +177,9 @@ export function ProductDetailsClient({ initialProduct }: ProductDetailsClientPro
               {/* Size Selection */}
               <div className="mb-6">
                 <div className="flex justify-between items-center mb-3">
-                  <label className="font-bold text-sm tracking-wider">SELECT SIZE</label>
+                  <label className="font-bold text-sm tracking-wider">
+                    SELECT SIZE <span className="text-red-500">*</span>
+                  </label>
                 </div>
                 <div className="grid grid-cols-6 gap-2">
                   {product.sizes?.map((size: string) => (
@@ -187,7 +200,9 @@ export function ProductDetailsClient({ initialProduct }: ProductDetailsClientPro
 
               {/* Color Selection */}
               <div className="mb-6">
-                <label className="font-bold text-sm tracking-wider mb-3 block">SELECT COLOR</label>
+                <label className="font-bold text-sm tracking-wider mb-3 block">
+                  SELECT COLOR <span className="text-red-500">*</span>
+                </label>
                 <div className="flex gap-3">
                   {product.colors?.map((color) => (
                     <button
@@ -235,9 +250,10 @@ export function ProductDetailsClient({ initialProduct }: ProductDetailsClientPro
                 <Button
                   size="lg"
                   onClick={handleAddToCart}
-                  className="w-full bg-black text-white hover:bg-black/90 font-semibold tracking-wide h-14"
+                  disabled={isAddToCartDisabled}
+                  className="w-full bg-black text-white hover:bg-black/90 font-semibold tracking-wide h-14 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  ADD TO CART
+                  {isAddToCartDisabled ? "SELECT OPTIONS" : "ADD TO CART"}
                 </Button>
               </div>
 
@@ -273,8 +289,6 @@ export function ProductDetailsClient({ initialProduct }: ProductDetailsClientPro
                       <ul className="list-disc list-inside space-y-2 text-sm">
                         <li>100% Premium Cotton</li>
                         <li>320gsm Heavyweight Fabric</li>
-                        <li>Oversized Relaxed Fit</li>
-                        <li>Dropped Shoulders</li>
                         <li>Signature Eddie Originals Branding</li>
                         <li>Pre-shrunk for Perfect Fit</li>
                       </ul>

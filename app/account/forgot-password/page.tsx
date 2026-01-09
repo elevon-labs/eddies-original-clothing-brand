@@ -4,12 +4,64 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft } from "lucide-react"
-import { useEffect } from "react"
+import { ArrowLeft, Loader2 } from "lucide-react"
+import { useEffect, useState } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { useToast } from "@/hooks/use-toast"
 
 import { AccountPolicyInfo } from "@/components/account-policy-info"
 
+const resetSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+})
+
+type ResetFormValues = z.infer<typeof resetSchema>
+
 export default function ForgotPasswordPage() {
+  const [isLoading, setIsLoading] = useState(false)
+  const { toast } = useToast()
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ResetFormValues>({
+    resolver: zodResolver(resetSchema),
+  })
+
+  const onSubmit = async (data: ResetFormValues) => {
+    setIsLoading(true)
+
+    try {
+      const response = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || "Something went wrong")
+      }
+
+      toast({
+        title: "Check your email",
+        description: result.success,
+      })
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Something went wrong",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   // Ensure content is visible/centered on mobile mount
   useEffect(() => {
     // Small delay to ensure render is complete before scrolling
@@ -77,19 +129,35 @@ export default function ForgotPasswordPage() {
                   </p>
                 </div>
 
-                <div className="space-y-4">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                   <div className="space-y-1.5">
                     <Label htmlFor="email" className="text-sm font-semibold text-black ml-1">Email Address</Label>
                     <Input 
                       id="email" 
                       placeholder="name@example.com" 
                       type="email"
-                      className="h-11 border-black/10 focus-visible:ring-black bg-neutral-50 text-black placeholder:text-black/50 text-base"
+                      className={`h-11 border-black/10 focus-visible:ring-black bg-neutral-50 text-black placeholder:text-black/50 text-base ${errors.email ? "border-red-500 focus-visible:ring-red-500" : ""}`}
+                      {...register("email")}
+                      disabled={isLoading}
                     />
+                    {errors.email && (
+                      <p className="text-sm text-red-500 ml-1">{errors.email.message}</p>
+                    )}
                   </div>
 
-                  <Button className="w-full h-11 bg-black hover:bg-black/70 text-white font-medium tracking-wide rounded-lg cursor-pointer transition-colors text-base mt-2">
-                    SEND RESET LINK
+                  <Button 
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full h-11 bg-black hover:bg-black/70 text-white font-medium tracking-wide rounded-lg cursor-pointer transition-colors text-base mt-2"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        SENDING LINK...
+                      </>
+                    ) : (
+                      "SEND RESET LINK"
+                    )}
                   </Button>
 
                   <div className="text-center text-sm text-black/30 mt-4">
@@ -98,7 +166,7 @@ export default function ForgotPasswordPage() {
                     and{" "}
                     <Link href="/terms" className="underline hover:text-black/60">Terms of Service</Link>.
                   </div>
-                </div>
+                </form>
                 
                  <div className="mt-4 text-center">
                    <Link href="/" className="text-xs font-medium text-black/40 hover:text-black transition-colors uppercase tracking-wider">

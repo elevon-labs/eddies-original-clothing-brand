@@ -17,7 +17,7 @@ import { Upload, X, Star, ImageIcon, Plus } from "lucide-react"
 
 const sizes = ["XS", "S", "M", "L", "XL", "XXL"]
 const categories = ["Tees", "Hoodies", "Outerwear", "Bottoms", "Accessories"]
-const collections = ["Summer 2024", "Winter 2024", "Essentials", "Streetwear", "Limited Edition"]
+const collections = ["Winter Essentials", "Street Classics", "Premium Outerwear", "Accessories"]
 
 const getColorHex = (str: string) => {
   if (typeof window === "undefined") return null
