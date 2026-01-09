@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
-import { Upload, X, Star, ImageIcon, Plus } from "lucide-react"
+import { Upload, X, Star, ImageIcon, Plus, Info } from "lucide-react"
 
 const sizes = ["XS", "S", "M", "L", "XL", "XXL"]
 const categories = ["Tees", "Hoodies", "Outerwear", "Bottoms", "Accessories"]
@@ -54,8 +54,16 @@ export function ProductForm({ initialData }: { initialData?: ProductData }) {
   const [colors, setColors] = useState<{ name: string; hex: string }[]>(initialData?.colors || [])
   const [newColor, setNewColor] = useState({ name: "", hex: "#000000" })
   
-  const [category, setCategory] = useState(initialData?.category || "")
-  const [collection, setCollection] = useState(initialData?.collection || "")
+  const [category, setCategory] = useState(() => {
+    if (!initialData?.category) return ""
+    const match = categories.find(c => c.toLowerCase() === initialData.category.toLowerCase())
+    return match || initialData.category
+  })
+  const [collection, setCollection] = useState(() => {
+    if (!initialData?.collection) return ""
+    const match = collections.find(c => c.toLowerCase() === initialData.collection.toLowerCase())
+    return match || initialData.collection
+  })
 
   // Advanced Image Management
   const [productImages, setProductImages] = useState<{ id: string; file?: File; preview: string }[]>(initialData?.images || [])
@@ -240,15 +248,15 @@ export function ProductForm({ initialData }: { initialData?: ProductData }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Left Column */}
-        <div className="space-y-6">
-          <Card className="bg-white border-neutral-200 text-black">
+      <div className="space-y-6">
+        {/* Row 1: Essentials & Inventory */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card className="bg-white border-neutral-200 text-black h-full flex flex-col">
             <CardHeader className="p-4 sm:p-6">
               <CardTitle>Product Essentials</CardTitle>
               <CardDescription>Basic product information</CardDescription>
             </CardHeader>
-            <CardContent className="p-4 sm:p-6 space-y-4">
+            <CardContent className="p-4 sm:p-6 space-y-4 flex-1">
               <div className="space-y-2">
                 <Label htmlFor="name">Product Name</Label>
                 <Input 
@@ -279,7 +287,7 @@ export function ProductForm({ initialData }: { initialData?: ProductData }) {
                     </SelectTrigger>
                     <SelectContent>
                       {categories.map((cat) => (
-                        <SelectItem key={cat} value={cat.toLowerCase()}>
+                        <SelectItem key={cat} value={cat}>
                           {cat}
                         </SelectItem>
                       ))}
@@ -295,7 +303,7 @@ export function ProductForm({ initialData }: { initialData?: ProductData }) {
                     </SelectTrigger>
                     <SelectContent>
                       {collections.map((col) => (
-                        <SelectItem key={col} value={col.toLowerCase()}>
+                        <SelectItem key={col} value={col}>
                           {col}
                         </SelectItem>
                       ))}
@@ -306,47 +314,12 @@ export function ProductForm({ initialData }: { initialData?: ProductData }) {
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-neutral-200 text-black">
-            <CardHeader className="p-4 sm:p-6">
-              <CardTitle>Pricing & Badges</CardTitle>
-              <CardDescription>Set pricing and automatic sale badges</CardDescription>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6 space-y-6">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="original-price">Original Price (₦)</Label>
-                  <Input 
-                    id="original-price" 
-                    type="number" 
-                    placeholder="99000" 
-                    value={prices.original}
-                    onChange={(e) => setPrices({...prices, original: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="selling-price">Selling Price (₦)</Label>
-                  <Input 
-                    id="selling-price" 
-                    type="number" 
-                    placeholder="89000" 
-                    required 
-                    value={prices.selling}
-                    onChange={(e) => setPrices({...prices, selling: e.target.value})}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right Column */}
-        <div className="space-y-6">
-          <Card className="bg-white border-neutral-200 text-black">
+          <Card className="bg-white border-neutral-200 text-black h-full flex flex-col">
             <CardHeader className="p-4 sm:p-6">
               <CardTitle>Inventory Details</CardTitle>
               <CardDescription>Stock, sizes, and colors</CardDescription>
             </CardHeader>
-            <CardContent className="p-4 sm:p-6 space-y-4">
+            <CardContent className="p-4 sm:p-6 space-y-4 flex-1">
               <div className="space-y-2">
                 <Label>Available Sizes</Label>
                 <div className="flex flex-wrap gap-2">
@@ -426,13 +399,59 @@ export function ProductForm({ initialData }: { initialData?: ProductData }) {
               </div>
             </CardContent>
           </Card>
+        </div>
 
-          <Card className="bg-white border-neutral-200 text-black">
+        {/* Row 2: Pricing & Images */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card className="bg-white border-neutral-200 text-black h-full flex flex-col">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle>Pricing & Badges</CardTitle>
+              <CardDescription>Set pricing and automatic sale badges</CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6 space-y-6 flex-1">
+              <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-3 text-sm text-neutral-600 flex gap-3">
+                <Info className="w-5 h-5 flex-shrink-0 text-black" />
+                <div className="space-y-1">
+                  <p className="font-medium text-black">Automatic Sale Badge</p>
+                  <p>
+                    When the <span className="font-medium">Selling Price</span> is set lower than the <span className="font-medium">Original Price</span>, 
+                    a discount percentage badge will be automatically calculated and displayed on the product card.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="original-price">Original Price (₦)</Label>
+                  <Input 
+                    id="original-price" 
+                    type="number" 
+                    placeholder="99000" 
+                    value={prices.original}
+                    onChange={(e) => setPrices({...prices, original: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="selling-price">Selling Price (₦)</Label>
+                  <Input 
+                    id="selling-price" 
+                    type="number" 
+                    placeholder="89000" 
+                    required 
+                    value={prices.selling}
+                    onChange={(e) => setPrices({...prices, selling: e.target.value})}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border-neutral-200 text-black h-full flex flex-col">
             <CardHeader className="p-4 sm:p-6">
               <CardTitle>Product Images</CardTitle>
               <CardDescription>Upload up to 5 product photos. First image is the cover.</CardDescription>
             </CardHeader>
-            <CardContent className="p-4 sm:p-6">
+            <CardContent className="p-4 sm:p-6 flex-1">
               <input 
                 type="file" 
                 ref={fileInputRef} 

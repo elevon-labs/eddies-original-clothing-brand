@@ -6,11 +6,25 @@ import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, Check } from "lucide-reac
 import Image from "next/image"
 import Link from "next/link"
 
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
+
 export default function CartPage() {
   const { items, removeItem, updateQuantity, total, itemCount } = useCart()
+  const { data: session } = useSession()
+  const router = useRouter()
 
-  const shippingCost = 3000
+  const shippingCost = 0
   const finalTotal = total + shippingCost
+
+  const handleCheckout = () => {
+    if (!session) {
+      router.push("/account/login?callbackUrl=/cart")
+      return
+    }
+    // Proceed to checkout logic here
+    // router.push("/checkout")
+  }
 
   if (items.length === 0) {
     return (
@@ -70,8 +84,9 @@ export default function CartPage() {
                             <span>Color:</span>
                             <div
                               className="w-4 h-4 rounded-full border border-black/10"
-                              style={{ backgroundColor: item.color }}
+                              style={{ backgroundColor: item.colorHex || item.color }}
                             />
+                            <span>{item.color}</span>
                           </div>
                         )}
                       </div>
@@ -128,8 +143,8 @@ export default function CartPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/70">Shipping</span>
-                    <span className="font-semibold">
-                      ₦{shippingCost.toLocaleString()}
+                    <span className="font-semibold text-white/50 text-sm">
+                      Calculated at checkout
                     </span>
                   </div>
                 </div>
@@ -142,8 +157,9 @@ export default function CartPage() {
                 <Button
                   size="lg"
                   className="w-full bg-white text-black hover:bg-white/90 font-semibold tracking-wide h-14 mb-4"
+                  onClick={handleCheckout}
                 >
-                  PROCEED TO CHECKOUT
+                  {session ? "PROCEED TO CHECKOUT" : "SIGN IN TO CHECKOUT"}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
 

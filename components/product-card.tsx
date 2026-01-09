@@ -52,9 +52,9 @@ export function ProductCard({ product }: { product: Product }) {
     : 0
 
   return (
-    <div className="group">
-      <Link href={`/product/${product.id}`} className="block">
-        <div className="relative aspect-[3/4] overflow-hidden bg-neutral-100 mb-4 rounded-lg">
+    <div className="group h-full">
+      <Link href={`/product/${product.id}`} className="flex flex-col h-full">
+        <div className="relative aspect-[3/4] overflow-hidden bg-neutral-100 mb-4 rounded-lg flex-shrink-0">
           <Image
             src={product.image || "/placeholder.svg"}
             alt={product.name}
@@ -105,24 +105,26 @@ export function ProductCard({ product }: { product: Product }) {
           </div>
         </div>
 
-        <div>
+        <div className="flex flex-col flex-grow">
           <h3 className="font-medium text-base mb-1 group-hover:underline decoration-1 underline-offset-4">
             {product.name}
           </h3>
-          <div className="flex items-center gap-2">
-            <span className="font-semibold">₦{product.price.toLocaleString()}</span>
-            {product.originalPrice && (
-              <span className="text-sm text-black/40 line-through">₦{product.originalPrice.toLocaleString()}</span>
+          <div className="mt-auto">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold">₦{product.price.toLocaleString()}</span>
+              {product.originalPrice && product.originalPrice > product.price && (
+                <span className="text-sm text-black/40 line-through">₦{product.originalPrice.toLocaleString()}</span>
+              )}
+            </div>
+            {product.rating && (
+              <div className="flex items-center gap-1 mt-1">
+                <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                <span className="text-xs text-black/60">
+                  {product.rating} ({product.reviews})
+                </span>
+              </div>
             )}
           </div>
-          {product.rating && (
-            <div className="flex items-center gap-1 mt-1">
-              <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-              <span className="text-xs text-black/60">
-                {product.rating} ({product.reviews})
-              </span>
-            </div>
-          )}
         </div>
       </Link>
     </div>

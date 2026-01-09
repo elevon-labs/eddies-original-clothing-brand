@@ -75,7 +75,7 @@ function ShopContent() {
   const collections = ["ALL", "Winter Essentials", "Street Classics", "Premium Outerwear", "Accessories"]
 
   const filteredProducts = products.filter((product) => {
-    const matchesCategory = selectedCategory === "ALL" || product.collection === selectedCategory
+    const matchesCategory = selectedCategory === "ALL" || product.collection?.toLowerCase() === selectedCategory.toLowerCase()
     const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1]
     return matchesCategory && matchesPrice
   })

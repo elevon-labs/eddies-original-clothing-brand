@@ -11,6 +11,7 @@ interface CartItem {
   quantity: number
   size?: string
   color?: string
+  colorHex?: string
   cartId: string
 }
 
@@ -28,23 +29,30 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
+  const [isInitialized, setIsInitialized] = useState(false)
 
   useEffect(() => {
     const saved = localStorage.getItem("eddie-cart")
     if (saved) {
-      const parsed = JSON.parse(saved)
-      setItems(
-        parsed.map((item: any) => ({
-          ...item,
-          cartId: item.cartId || `${item.id}-${item.size || ""}-${item.color || ""}`,
-        })),
-      )
+      try {
+        const parsed = JSON.parse(saved)
+        setItems(
+          parsed.map((item: any) => ({
+            ...item,
+            cartId: item.cartId || `${item.id}-${item.size || ""}-${item.color || ""}`,
+          })),
+        )
+      } catch (e) {
+        console.error("Failed to parse cart from local storage")
+      }
     }
+    setIsInitialized(true)
   }, [])
 
   useEffect(() => {
+    if (!isInitialized) return
     localStorage.setItem("eddie-cart", JSON.stringify(items))
-  }, [items])
+  }, [items, isInitialized])
 
   const addItem = (item: Omit<CartItem, "cartId">) => {
     const cartId = `${item.id}-${item.size || ""}-${item.color || ""}`

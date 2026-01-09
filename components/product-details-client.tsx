@@ -73,6 +73,8 @@ export function ProductDetailsClient({ initialProduct }: ProductDetailsClientPro
   }, [product])
 
   const handleAddToCart = () => {
+    const selectedColorObj = product.colors?.find(c => c.name === selectedColor)
+    
     addItem({
       id: product.id,
       name: product.name,
@@ -81,6 +83,7 @@ export function ProductDetailsClient({ initialProduct }: ProductDetailsClientPro
       quantity: quantity,
       size: selectedSize,
       color: selectedColor,
+      colorHex: selectedColorObj?.hex,
     })
 
     toast({
@@ -169,7 +172,7 @@ export function ProductDetailsClient({ initialProduct }: ProductDetailsClientPro
               {/* Price */}
               <div className="flex items-center gap-3 mb-8">
                 <span className="text-3xl font-bold">₦{product.price.toLocaleString()}</span>
-                {product.originalPrice && (
+                {product.originalPrice && product.originalPrice > product.price && (
                   <span className="text-xl text-black/40 line-through">₦{product.originalPrice.toLocaleString()}</span>
                 )}
               </div>
