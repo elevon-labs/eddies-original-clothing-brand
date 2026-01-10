@@ -8,6 +8,7 @@ import { ArrowRight, Instagram, Shield, Sparkles } from "lucide-react"
 import { db } from "@/db"
 import { products } from "@/db/schema"
 import { desc, eq } from "drizzle-orm"
+import { isNewProduct } from "@/lib/utils"
 
 export default async function HomePage() {
   const latestProducts = await db.query.products.findMany({
@@ -23,9 +24,9 @@ export default async function HomePage() {
     originalPrice: p.originalPrice ? Number(p.originalPrice) : undefined,
     image: p.images && p.images.length > 0 ? p.images[0] : "/placeholder.svg",
     category: p.category || "General",
-    badge: (p.stockCount || 0) < 5 ? "LOW STOCK" : "NEW",
-    rating: 4.8,
-    reviews: 124,
+    badge: (p.stockCount || 0) < 5 ? "LOW STOCK" : (isNewProduct(p.createdAt) ? "NEW" : null),
+    rating: p.averageRating || 0,
+    reviews: p.reviewCount || 0,
   }))
 
 

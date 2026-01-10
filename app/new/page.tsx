@@ -19,18 +19,18 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic'
 
 export default async function NewArrivalsPage() {
-  // Calculate date 3 weeks ago
-  const threeWeeksAgo = new Date()
-  threeWeeksAgo.setDate(threeWeeksAgo.getDate() - 21)
+  // Calculate date 2 weeks ago
+  const twoWeeksAgo = new Date()
+  twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14)
 
-  // Fetch products created in the last 3 weeks
+  // Fetch products created in the last 2 weeks
   const recentProductsData = await db
     .select()
     .from(products)
     .where(
       and(
         eq(products.isActive, true),
-        gt(products.createdAt, threeWeeksAgo)
+        gt(products.createdAt, twoWeeksAgo)
       )
     )
     .orderBy(desc(products.createdAt))
@@ -46,8 +46,8 @@ export default async function NewArrivalsPage() {
     category: p.category,
     description: p.description,
     badge: "NEW",
-    rating: 5.0, // Default rating for new items
-    reviews: 0,
+    rating: p.averageRating || 0,
+    reviews: p.reviewCount || 0,
     stockCount: p.stockCount || 0,
     isActive: p.isActive || false,
     sizes: p.sizes || [],

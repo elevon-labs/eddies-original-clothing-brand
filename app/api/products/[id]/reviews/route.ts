@@ -87,8 +87,8 @@ export async function POST(
     const reviewCount = stats[0]?.count || 0
     const rawAvg = stats[0]?.avg || 0
     
-    // Store average as int * 10 (e.g. 4.5 -> 45)
-    const averageRating = Math.round(rawAvg * 10)
+    // Store actual average
+    const averageRating = rawAvg
 
     await db
       .update(products)

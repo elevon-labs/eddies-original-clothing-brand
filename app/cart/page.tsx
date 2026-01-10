@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/components/cart-provider"
+import { calculateShipping } from "@/lib/utils"
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, Check } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -14,7 +15,7 @@ export default function CartPage() {
   const { data: session } = useSession()
   const router = useRouter()
 
-  const shippingCost = 0
+  const shippingCost = calculateShipping(total)
   const finalTotal = total + shippingCost
 
   const handleCheckout = () => {
@@ -23,7 +24,7 @@ export default function CartPage() {
       return
     }
     // Proceed to checkout logic here
-    // router.push("/checkout")
+    router.push("/checkout")
   }
 
   if (items.length === 0) {
@@ -143,9 +144,7 @@ export default function CartPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/70">Shipping</span>
-                    <span className="font-semibold text-white/50 text-sm">
-                      Calculated at checkout
-                    </span>
+                    <span className="font-semibold">₦{shippingCost.toLocaleString()}</span>
                   </div>
                 </div>
 

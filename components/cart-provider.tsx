@@ -2,18 +2,7 @@
 
 import type React from "react"
 import { createContext, useContext, useState, useEffect } from "react"
-
-interface CartItem {
-  id: string
-  name: string
-  price: number
-  image: string
-  quantity: number
-  size?: string
-  color?: string
-  colorHex?: string
-  cartId: string
-}
+import { CartItem } from "@/types"
 
 interface CartContextType {
   items: CartItem[]

@@ -4,10 +4,12 @@ import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { ProductCard } from "@/components/product-card"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Slider } from "@/components/ui/slider"
-import { SlidersHorizontal, X } from "lucide-react"
+import { Search, SlidersHorizontal, X } from "lucide-react"
 import { Product } from "@/types"
 import { Skeleton } from "@/components/ui/skeleton"
+import { isNewProduct } from "@/lib/utils"
 
 export default function ShopPage() {
   return (
@@ -45,9 +47,9 @@ function ShopContent() {
             images: p.images,
             category: p.category || "General",
             collection: p.collection,
-            badge: p.stockCount < 5 ? "LOW STOCK" : null, // Example logic
-            rating: 5.0, // Default for now
-            reviews: 0,
+            badge: p.stockCount < 5 ? "LOW STOCK" : (isNewProduct(p.createdAt) ? "NEW" : null),
+            rating: p.averageRating || 0,
+            reviews: p.reviewCount || 0,
             description: p.description,
             stockCount: p.stockCount,
             isActive: p.isActive,

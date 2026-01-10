@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
 import Link from "next/link"
+import { isNewProduct } from "@/lib/utils"
 
 interface ProductDetailsClientProps {
   initialProduct: Product
@@ -55,9 +56,10 @@ export function ProductDetailsClient({ initialProduct }: ProductDetailsClientPro
             data.map((p: any) => ({
               ...p,
               images: p.images && p.images.length > 0 ? p.images : ["/placeholder.svg"],
-              rating: p.averageRating ? p.averageRating / 10 : 0,
+              rating: p.averageRating || 0,
               reviews: p.reviewCount || 0,
               inStock: p.stockCount > 0,
+              badge: p.stockCount < 5 ? "LOW STOCK" : (isNewProduct(p.createdAt) ? "NEW" : null),
             }))
           )
         }

@@ -75,14 +75,14 @@ export default async function ProductPage({ params }: Props) {
     sizes: (productData.sizes as string[]) || [],
     colors: (productData.colors as { name: string; hex: string }[]) || [],
     reviews: productData.reviewCount || 0,
-    rating: productData.averageRating ? productData.averageRating / 10 : 0, // Assuming stored as integer 0-50? API code didn't show div 10 but original page did
+    rating: productData.averageRating || 0,
     createdAt: productData.createdAt || undefined,
   }
 
   // Double check rating logic from original page:
-  // rating: data.averageRating ? data.averageRating / 10 : 0, 
-  // If I look at the schema: averageRating: integer("average_rating").default(0),
-  // If it's 48 (4.8 stars), then /10 is correct.
+  // rating: data.averageRating ? data.averageRating : 0, 
+  // If I look at the schema: averageRating: real("average_rating").default(0),
+  // If it's 4.8, then it's correct.
 
   return <ProductDetailsClient initialProduct={product} />
 }
