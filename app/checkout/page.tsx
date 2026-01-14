@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2, Lock, ChevronLeft, MapPin, CreditCard, ShoppingBag } from "lucide-react"
+import { Loader2, Lock, ChevronLeft, MapPin } from "lucide-react"
 import Link from "next/link"
 import { usePaystackPayment } from "react-paystack"
 import { PaystackProps } from "react-paystack/dist/types"
@@ -61,6 +61,10 @@ export default function CheckoutPage() {
       country: "Nigeria",
     },
   })
+
+  // Watch form fields to keep Paystack config updated
+  const email = form.watch("email")
+  const phone = form.watch("phone")
 
   // Hydration fix & Auth check
   useEffect(() => {
@@ -119,7 +123,7 @@ export default function CheckoutPage() {
   // Paystack Config
   const config: PaystackProps = {
     reference: (new Date()).getTime().toString(),
-    email: form.getValues("email"),
+    email: email || "", // Use watched value
     amount: finalTotal * 100, // Paystack expects Kobo
     publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "",
     metadata: {
@@ -128,6 +132,11 @@ export default function CheckoutPage() {
                 display_name: "Cart Items",
                 variable_name: "cart_items",
                 value: items.map(i => `${i.quantity}x ${i.name}`).join(", ")
+            },
+            {
+                display_name: "Phone",
+                variable_name: "phone",
+                value: phone || ""
             }
         ]
     }
@@ -190,32 +199,17 @@ export default function CheckoutPage() {
       return
     }
 
-    // Update config with latest form data
-    const paymentConfig = {
-        ...config,
-        email: data.email,
-        metadata: {
-            custom_fields: [
-                {
-                    display_name: "Phone",
-                    variable_name: "phone",
-                    value: data.phone
-                }
-            ]
-        }
+    if (!process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY) {
+      toast({
+        title: "Configuration Error",
+        description: "Payment system is not properly configured.",
+        variant: "destructive",
+      })
+      console.error("Paystack public key is missing")
+      return
     }
     
     // Trigger Paystack
-    // Note: We need to use the hook's initializePayment but passing updated config isn't supported directly by the hook instance usually 
-    // depending on implementation. `react-paystack` hook takes config at init.
-    // workaround: we just use the one initialized, but email might be stale if user changed it.
-    // Better approach: Re-initialize or use PaystackButton, but hook is cleaner.
-    // Let's trust the form state is synced or just pass email to initializePayment if it supports overrides (it usually takes onSuccess/onClose).
-    
-    // Actually `usePaystackPayment` returns a function that executes the payment.
-    // It uses the config passed at hook creation. If config changes, does the hook update?
-    // Yes, if we pass config as dependency or if it re-renders. 
-    // But to be safe, we can manually call the PaystackPop method if we had access, but with the hook:
     initializePayment({ onSuccess, onClose })
   }
 
@@ -402,7 +396,7 @@ export default function CheckoutPage() {
                   </>
                 ) : (
                   <>
-                    Pay Now ₦{total.toLocaleString()}
+                    Pay Now ₦{finalTotal.toLocaleString()}
                   </>
                 )}
               </Button>
