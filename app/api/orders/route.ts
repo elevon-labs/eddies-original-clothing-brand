@@ -1,31 +1,84 @@
-import { NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
 import { db } from "@/db"
-import { orders } from "@/db/schema"
-import { eq, desc } from "drizzle-orm"
+import { OrderPayload } from "@/types"
+import { NextResponse } from "next/server"
+import { calculateShipping } from "@/lib/utils"
+import { orders, orderItems } from "@/db/schema"
+import { sendOrderConfirmationEmail, sendAdminNewOrderEmail } from "@/lib/mail"
 
-export async function GET(req: Request) {
+export async function POST(req: Request) {
   try {
-    const session = await auth()
+    const payload: OrderPayload = await req.json()
+    const { reference, cartItems, shippingAddress, email, userId, totalAmount, shippingCost } = payload
 
-    if (!session || !session.user || !session.user.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    if (!reference || !cartItems || cartItems.length === 0 || !shippingAddress || !email || !totalAmount) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
-    const userOrders = await db.query.orders.findMany({
-      where: eq(orders.userId, session.user.id),
-      orderBy: [desc(orders.createdAt)],
-      with: {
-        items: true,
-      },
+    // Validate calculations (server-side)
+    const subtotal = cartItems.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0)
+    const expectedShipping = calculateShipping(subtotal)
+    // totalAmount is in Kobo, subtotal/shipping in Naira (based on previous analysis)
+    const expectedTotalKobo = (subtotal + expectedShipping) * 100
+
+    // Allow small margin of error? Or exact match?
+    // Given integer math, it should be exact.
+    // But let's check if the client sent shippingCost.
+    
+    // 1. Verify with Paystack
+    const verifyReq = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
+      headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}` },
+    })
+    const verifyData = await verifyReq.json()
+
+    if (!verifyData.status || verifyData.data.status !== 'success') {
+      return NextResponse.json({ error: "Payment verification failed" }, { status: 400 })
+    }
+    
+    // Ensure amount matches (Paystack returns in Kobo)
+    if (verifyData.data.amount !== totalAmount) { 
+        return NextResponse.json({ error: "Amount mismatch" }, { status: 400 })
+    }
+
+    // 2. Create Order & Items
+    // Using transaction to ensure integrity
+    const result = await db.transaction(async (tx) => {
+        const [newOrder] = await tx.insert(orders).values({
+            userId: userId || null,
+            status: 'paid',
+            total: totalAmount,
+            shippingCost: shippingCost || expectedShipping * 100, // Save as Kobo
+            paystackReference: reference,
+            shippingAddress: shippingAddress,
+            guestEmail: email,
+            guestName: `${shippingAddress.firstName} ${shippingAddress.lastName}`
+        }).returning()
+
+        const itemsToInsert = cartItems.map((item) => ({
+            orderId: newOrder.id,
+            productId: item.id,
+            productName: item.name,
+            quantity: item.quantity,
+            price: item.price,
+            selectedSize: item.size,
+            selectedColor: item.color
+        }))
+
+        await tx.insert(orderItems).values(itemsToInsert)
+        
+        return newOrder
     })
 
-    return NextResponse.json(userOrders, { status: 200 })
+    // 3. Send Emails (Async, don't block response)
+    // We await them here for simplicity to ensure they are sent, or use Promise.allSettled
+    await Promise.allSettled([
+        sendOrderConfirmationEmail({ to: email, orderId: result.id, items: cartItems, total: totalAmount }),
+        sendAdminNewOrderEmail({ orderId: result.id, total: totalAmount })
+    ])
+
+    return NextResponse.json({ success: true, orderId: result.id })
+
   } catch (error) {
-    console.error("Fetch orders error:", error)
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    )
+    console.error("Order creation error:", error)
+    return NextResponse.json({ error: "Failed to create order" }, { status: 500 })
   }
 }

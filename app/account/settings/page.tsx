@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { useSession, signOut } from "next-auth/react"
-import { Loader2, LogOut, User, ShieldCheck, Plus, Trash2, MapPin, Check } from "lucide-react"
+import { Loader2, LogOut, User, ShieldCheck, Plus, Trash2, MapPin, Eye, EyeOff, Info } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { toast } from "sonner"
+import { useToast } from "@/hooks/use-toast"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Checkbox } from "@/components/ui/checkbox"
 
@@ -48,9 +48,11 @@ type Address = AddressFormValues & { id: string; userId: string }
 export default function SettingsPage() {
   const { data: session, status, update: updateSession } = useSession()
   const router = useRouter()
+  const { toast } = useToast()
   
   // Profile State
   const [isProfileLoading, setIsProfileLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   
   // Address State
   const [addresses, setAddresses] = useState<Address[]>([])
@@ -110,7 +112,11 @@ export default function SettingsPage() {
       }
     } catch (error) {
       console.error("Failed to fetch addresses", error)
-      toast.error("Failed to load addresses")
+      toast({
+        title: "Error",
+        description: "Failed to load addresses",
+        variant: "destructive",
+      })
     } finally {
       setIsAddressesLoading(false)
     }
@@ -125,14 +131,23 @@ export default function SettingsPage() {
         body: JSON.stringify(data),
       })
 
-      if (!res.ok) throw new Error("Failed to update profile")
+      const result = await res.json()
 
-      toast.success("Profile updated successfully")
+      if (!res.ok) throw new Error(result.error || "Failed to update profile")
+
+      toast({
+        title: "Success",
+        description: "Profile updated successfully",
+      })
       // Update session to reflect new name
       await updateSession({ name: data.name })
       profileForm.reset({ ...data, password: "" })
     } catch (error) {
-      toast.error("Failed to update profile")
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update profile",
+        variant: "destructive",
+      })
     } finally {
       setIsProfileLoading(false)
     }
@@ -147,9 +162,11 @@ export default function SettingsPage() {
         body: JSON.stringify(data),
       })
 
-      if (!res.ok) throw new Error("Failed to add address")
+      const result = await res.json()
 
-      const newAddress = await res.json()
+      if (!res.ok) throw new Error(result.error || "Failed to add address")
+
+      const newAddress = result
       setAddresses((prev) => {
         // If new address is default, unmark others
         if (newAddress.isDefault) {
@@ -158,11 +175,18 @@ export default function SettingsPage() {
         return [...prev, newAddress]
       })
       
-      toast.success("Address added successfully")
+      toast({
+        title: "Success",
+        description: "Address added successfully",
+      })
       setIsAddressDialogOpen(false)
       addressForm.reset()
     } catch (error) {
-      toast.error("Failed to add address")
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to add address",
+        variant: "destructive",
+      })
     } finally {
       setIsAddingAddress(false)
     }
@@ -174,12 +198,21 @@ export default function SettingsPage() {
         method: "DELETE",
       })
 
-      if (!res.ok) throw new Error("Failed to delete address")
+      const result = await res.json()
+
+      if (!res.ok) throw new Error(result.error || "Failed to delete address")
 
       setAddresses((prev) => prev.filter((a) => a.id !== id))
-      toast.success("Address deleted")
+      toast({
+        title: "Success",
+        description: "Address deleted",
+      })
     } catch (error) {
-      toast.error("Failed to delete address")
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete address",
+        variant: "destructive",
+      })
     }
   }
 
@@ -272,15 +305,31 @@ export default function SettingsPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="password">New Password</Label>
-                    <Input 
-                      id="password" 
-                      type="password" 
-                      placeholder="Leave blank to keep current" 
-                      {...profileForm.register("password")} 
-                    />
+                    <div className="relative">
+                      <Input 
+                        id="password" 
+                        type={showPassword ? "text" : "password"} 
+                        placeholder="Leave blank to keep current" 
+                        {...profileForm.register("password")}
+                        className="pr-10" 
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-black transition-colors"
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
                     {profileForm.formState.errors.password && (
                       <p className="text-sm text-red-500">{profileForm.formState.errors.password.message}</p>
                     )}
+                    <div className="flex gap-3 pt-2">
+                      <Info className="h-4 w-4 text-black/40 mt-0.5 shrink-0" />
+                      <p className="text-xs text-black/60 leading-relaxed">
+                        Updating this field will permanently change your login credentials. Please ensure you have securely recorded your new password.
+                      </p>
+                    </div>
                   </div>
                 </div>
                 <Button type="submit" disabled={isProfileLoading}>

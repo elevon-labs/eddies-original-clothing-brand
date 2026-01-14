@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Star, Lock, ThumbsUp, MessageSquare } from "lucide-react"
+import { Star, Lock, Loader2 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 // Mock Data
@@ -35,6 +35,9 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
   const [isWriting, setIsWriting] = useState(false)
   const [newReview, setNewReview] = useState({ rating: 5, title: "", content: "" })
   const [hoveredStar, setHoveredStar] = useState(0)
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 5
 
   useEffect(() => {
     async function fetchReviews() {
@@ -78,6 +81,7 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
       return
     }
 
+    setIsSubmittingReview(true)
     try {
       const res = await fetch(`/api/products/${productId}/reviews`, {
         method: "POST",
@@ -104,6 +108,7 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
       }
 
       setReviews([reviewWithUser, ...reviews])
+      setCurrentPage(1)
       setIsWriting(false)
       setNewReview({ rating: 5, title: "", content: "" })
       
@@ -117,6 +122,8 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
         description: "Failed to submit review. Please try again.",
         variant: "destructive",
       })
+    } finally {
+      setIsSubmittingReview(false)
     }
   }
 
@@ -311,6 +318,7 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
                     value={newReview.title}
                     onChange={(e) => setNewReview({ ...newReview, title: e.target.value })}
                     className="bg-white"
+                    disabled={isSubmittingReview}
                   />
                 </div>
 
@@ -321,11 +329,19 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
                     value={newReview.content}
                     onChange={(e) => setNewReview({ ...newReview, content: e.target.value })}
                     className="min-h-[120px] bg-white"
+                    disabled={isSubmittingReview}
                   />
                 </div>
 
-                <Button type="submit" className="w-full bg-black text-white hover:bg-black/80">
-                  Submit Review
+                <Button type="submit" className="w-full bg-black text-white hover:bg-black/80" disabled={isSubmittingReview}>
+                  {isSubmittingReview ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Submitting review...
+                    </>
+                  ) : (
+                    "Submit Review"
+                  )}
                 </Button>
               </form>
             </div>
@@ -333,7 +349,7 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
 
           {/* Reviews List */}
           <div className="space-y-8">
-            {reviews.map((review) => (
+            {reviews.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((review) => (
               <div key={review.id} className="border-b border-black/5 pb-8 last:border-0">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-4">
@@ -368,15 +384,41 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
                 </p>
                 
                 <div className="flex items-center gap-4 text-xs text-neutral-500">
-                  {/* Helpful feature not yet implemented in backend */}
-                  {/* <button className="flex items-center gap-1.5 hover:text-black transition-colors">
-                    <ThumbsUp className="h-3.5 w-3.5" />
-                    Helpful
-                  </button> */}
+                  <span className="text-neutral-400">Verified Purchase</span>
                 </div>
               </div>
             ))}
           </div>
+          
+          {reviews.length > pageSize && (
+            <div className="flex items-center justify-between pt-2">
+              <p className="text-sm text-neutral-500">
+                Page {currentPage} of {Math.ceil(reviews.length / pageSize)}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setCurrentPage((p) =>
+                      Math.min(Math.ceil(reviews.length / pageSize), p + 1)
+                    )
+                  }
+                  disabled={currentPage >= Math.ceil(reviews.length / pageSize)}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </section>

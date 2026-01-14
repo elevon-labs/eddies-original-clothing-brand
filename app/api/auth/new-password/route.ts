@@ -51,10 +51,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Email does not exist!" }, { status: 400 })
     }
 
-    // 3. Hash new password
+    // 3. Check if new password is same as old password
+    if (existingUser.password) {
+      const isSamePassword = await bcrypt.compare(password, existingUser.password)
+      if (isSamePassword) {
+        return NextResponse.json(
+          { error: "New password cannot be the same as the old password." },
+          { status: 400 }
+        )
+      }
+    }
+
+    // 4. Hash new password
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // 4. Update user and delete token
+    // 5. Update user and delete token
     await db
       .update(users)
       .set({

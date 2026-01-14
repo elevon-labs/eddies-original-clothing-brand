@@ -5,22 +5,23 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { useState, useEffect } from "react"
+import { Suspense, useState, useEffect } from "react"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { resendVerificationEmail } from "@/lib/actions/verify"
 
 import { AccountPolicyInfo } from "@/components/account-policy-info"
 
-export default function LoginPage() {
+function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const [verificationNeeded, setVerificationNeeded] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { toast } = useToast()
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -51,7 +52,8 @@ export default function LoginPage() {
           })
         }
       } else {
-        router.push("/")
+        const callbackUrl = searchParams.get("callbackUrl") || "/"
+        router.push(callbackUrl)
         router.refresh()
       }
     } catch (error) {
@@ -243,5 +245,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-black"><Loader2 className="h-8 w-8 animate-spin text-white" /></div>}>
+      <LoginForm />
+    </Suspense>
   )
 }

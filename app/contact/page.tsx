@@ -10,10 +10,12 @@ import { Mail, Phone, MapPin, Instagram, Loader2 } from "lucide-react"
 import { TikTok } from "@/components/icons"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
+import { TurnstileWidget } from "@/components/turnstile-widget"
 
 export default function ContactPage() {
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState<string>("")
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -29,7 +31,7 @@ export default function ContactPage() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, token: turnstileToken }),
       })
       
       const data = await res.json()
@@ -41,6 +43,8 @@ export default function ContactPage() {
         description: "Thank you for contacting us. We'll get back to you soon.",
       })
       setFormData({ name: "", email: "", subject: "", message: "" })
+      // Reset Turnstile token
+      setTurnstileToken("")
     } catch (error) {
       toast({
         title: "Error",
@@ -53,7 +57,7 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-black">
+    <div className="min-h-screen bg-white text-black overflow-x-hidden">
       
       <div className="pt-8 pb-20 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
@@ -66,9 +70,9 @@ export default function ContactPage() {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 min-w-0">
             {/* Contact Form */}
-            <div>
+            <div className="w-full max-w-xl mx-auto min-w-0">
               <form onSubmit={handleSubmit} className="flex flex-col gap-6 h-full">
                 <div>
                   <label htmlFor="name" className="block text-sm font-bold tracking-wider mb-2">
@@ -129,6 +133,8 @@ export default function ContactPage() {
                   />
                 </div>
 
+                <TurnstileWidget onVerify={(token) => setTurnstileToken(token)} />
+
                 <Button
                   type="submit"
                   size="lg"
@@ -142,7 +148,7 @@ export default function ContactPage() {
             </div>
 
             {/* Contact Info */}
-            <div>
+            <div className="w-full max-w-xl mx-auto mt-10 lg:mt-0 min-w-0">
               <div className="bg-neutral-50 p-6 lg:p-8 rounded-lg border border-black/5 mb-8">
                 <h2 className="text-2xl font-bold mb-6 tracking-tight">Contact Information</h2>
 
@@ -151,10 +157,9 @@ export default function ContactPage() {
                     <div className="flex-shrink-0 w-12 h-12 bg-black text-white rounded-full flex items-center justify-center">
                       <Mail className="h-5 w-5" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <h3 className="font-bold mb-1">Email</h3>
-                      <p className="text-black/60">info@eddieoriginals.com</p>
-                      <p className="text-black/60">support@eddieoriginals.com</p>
+                      <p className="text-black/60 break-words">eddieorginalsdepartement@gmail.com</p>
                     </div>
                   </div>
 
@@ -162,9 +167,9 @@ export default function ContactPage() {
                     <div className="flex-shrink-0 w-12 h-12 bg-black text-white rounded-full flex items-center justify-center">
                       <Phone className="h-5 w-5" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <h3 className="font-bold mb-1">Phone</h3>
-                      <p className="text-black/60">+234 XXX XXX XXXX</p>
+                      <p className="text-black/60 break-words">+234 907 430 9055</p>
                       <p className="text-sm text-black/50">Mon-Fri: 9AM - 6PM WAT</p>
                     </div>
                   </div>

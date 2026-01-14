@@ -7,7 +7,9 @@ import {
   integer,
   serial,
   json,
+  real,
 } from "drizzle-orm/pg-core"
+import { relations } from "drizzle-orm"
 import type { AdapterAccountType } from "next-auth/adapters"
 
 export const users = pgTable("user", {
@@ -101,7 +103,7 @@ export const products = pgTable("product", {
   sizes: json("sizes").$type<string[]>().default([]),
   colors: json("colors").$type<{ name: string; hex: string }[]>().default([]),
   reviewCount: integer("review_count").default(0),
-  averageRating: integer("average_rating").default(0),
+  averageRating: real("average_rating").default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 })
@@ -129,8 +131,9 @@ export const orders = pgTable("order", {
   userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
   status: text("status").default("pending"), // pending, paid, shipped, delivered, cancelled
   total: integer("total").notNull(),
+  shippingCost: integer("shipping_cost").default(0),
   currency: text("currency").default("NGN"),
-  stripePaymentIntentId: text("stripe_payment_intent_id"),
+  paystackReference: text("paystack_reference"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
   
@@ -193,3 +196,45 @@ export const messages = pgTable("message", {
   isRead: boolean("is_read").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 })
+
+// --- Relations ---
+
+export const usersRelations = relations(users, ({ many }) => ({
+  orders: many(orders),
+  reviews: many(productReviews),
+  addresses: many(addresses),
+}))
+
+export const ordersRelations = relations(orders, ({ one, many }) => ({
+  user: one(users, {
+    fields: [orders.userId],
+    references: [users.id],
+  }),
+  items: many(orderItems),
+}))
+
+export const orderItemsRelations = relations(orderItems, ({ one }) => ({
+  order: one(orders, {
+    fields: [orderItems.orderId],
+    references: [orders.id],
+  }),
+  product: one(products, {
+    fields: [orderItems.productId],
+    references: [products.id],
+  }),
+}))
+
+export const productsRelations = relations(products, ({ many }) => ({
+  reviews: many(productReviews),
+}))
+
+export const productReviewsRelations = relations(productReviews, ({ one }) => ({
+  user: one(users, {
+    fields: [productReviews.userId],
+    references: [users.id],
+  }),
+  product: one(products, {
+    fields: [productReviews.productId],
+    references: [products.id],
+  }),
+}))
