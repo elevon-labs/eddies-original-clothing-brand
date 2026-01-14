@@ -5,12 +5,13 @@ import { useSearchParams, useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { Loader2 } from "lucide-react"
+import { Loader2, Lock, Eye, EyeOff } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { toast } from "sonner"
+import { useToast } from "@/hooks/use-toast"
+import Link from "next/link"
 
 const newPasswordSchema = z
   .object({
@@ -33,6 +34,9 @@ function NewPasswordForm() {
   const token = searchParams.get("token")
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const { toast } = useToast()
 
   const {
     register,
@@ -44,7 +48,11 @@ function NewPasswordForm() {
 
   const onSubmit = async (data: NewPasswordFormValues) => {
     if (!token) {
-      toast.error("Error", { description: "Missing token!" })
+      toast({
+        title: "Error",
+        description: "Missing token!",
+        variant: "destructive",
+      })
       return
     }
 
@@ -66,14 +74,17 @@ function NewPasswordForm() {
         throw new Error(result.error || "Something went wrong")
       }
 
-      toast.success("Success", {
+      toast({
+        title: "Success",
         description: "Password updated successfully!",
       })
       
       router.push("/account/login")
     } catch (error) {
-      toast.error("Error", {
+      toast({
+        title: "Error",
         description: error instanceof Error ? error.message : "Something went wrong",
+        variant: "destructive",
       })
     } finally {
       setIsLoading(false)
@@ -89,68 +100,107 @@ function NewPasswordForm() {
   }
 
   return (
-    <div className="w-full max-w-sm space-y-8">
-      <div className="text-center space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight">Reset Password</h1>
-        <p className="text-sm text-gray-500">
-          Enter your new password below.
-        </p>
+    <div className="min-h-screen relative flex items-center justify-center p-4 bg-gray-50">
+      <div className="relative z-10 w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden p-8">
+        <div className="w-16 h-16 bg-black/5 rounded-full flex items-center justify-center mx-auto mb-6">
+          <Lock className="h-8 w-8 text-black" />
+        </div>
+
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold tracking-tight mb-2">Reset Password</h1>
+          <p className="text-black/60 leading-relaxed">
+            Enter your new password below.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="password">New Password</Label>
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                disabled={isLoading}
+                className={`h-11 border-black/10 focus-visible:ring-black bg-neutral-50 pr-8 ${errors.password ? "border-red-500 focus-visible:ring-red-500" : ""}`}
+                {...register("password")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-black/40 hover:text-black transition-colors"
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+            {errors.password && (
+              <p className="text-sm text-red-500">{errors.password.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <div className="relative">
+              <Input
+                id="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                disabled={isLoading}
+                className={`h-11 border-black/10 focus-visible:ring-black bg-neutral-50 pr-8 ${errors.confirmPassword ? "border-red-500 focus-visible:ring-red-500" : ""}`}
+                {...register("confirmPassword")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-black/40 hover:text-black transition-colors"
+              >
+                {showConfirmPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+            {errors.confirmPassword && (
+              <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
+            )}
+          </div>
+
+          <Button 
+            type="submit" 
+            className="w-full h-11 bg-black text-white hover:bg-black/90 rounded-lg cursor-pointer transition-colors font-medium mt-2"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                RESETTING...
+              </>
+            ) : (
+              "RESET PASSWORD"
+            )}
+          </Button>
+        </form>
+
+        <div className="mt-8 pt-6 border-t border-gray-100 text-center">
+          <Link
+            href="/account/login"
+            className="text-sm font-medium text-black/40 hover:text-black transition-colors"
+          >
+            Back to login
+          </Link>
+        </div>
       </div>
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="password">New Password</Label>
-          <Input
-            id="password"
-            type="password"
-            disabled={isLoading}
-            className={`h-11 ${errors.password ? "border-red-500 focus-visible:ring-red-500" : ""}`}
-            {...register("password")}
-          />
-          {errors.password && (
-            <p className="text-sm text-red-500">{errors.password.message}</p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="confirmPassword">Confirm Password</Label>
-          <Input
-            id="confirmPassword"
-            type="password"
-            disabled={isLoading}
-            className={`h-11 ${errors.confirmPassword ? "border-red-500 focus-visible:ring-red-500" : ""}`}
-            {...register("confirmPassword")}
-          />
-          {errors.confirmPassword && (
-            <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
-          )}
-        </div>
-
-        <Button 
-          type="submit" 
-          className="w-full h-11 bg-black text-white hover:bg-black/90 rounded-none"
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              RESETTING...
-            </>
-          ) : (
-            "RESET PASSWORD"
-          )}
-        </Button>
-      </form>
     </div>
   )
 }
 
 export default function NewPasswordPage() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-white">
-      <Suspense fallback={<Loader2 className="h-8 w-8 animate-spin" />}>
-        <NewPasswordForm />
-      </Suspense>
-    </div>
+    <Suspense fallback={<div className="flex h-screen w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
+      <NewPasswordForm />
+    </Suspense>
   )
 }

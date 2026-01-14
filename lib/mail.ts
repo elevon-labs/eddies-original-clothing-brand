@@ -147,6 +147,104 @@ Eddie Originals Team`,
   })
 }
 
+export const sendOrderConfirmationEmail = async ({
+  to,
+  orderId,
+  items,
+  total,
+}: {
+  to: string
+  orderId: string
+  items: any[]
+  total: number
+}) => {
+  const orderLink = `${getBaseUrl()}/account/orders/${orderId}`
+  const formattedTotal = (total / 100).toLocaleString("en-NG", {
+    style: "currency",
+    currency: "NGN",
+  })
+
+  await resend.emails.send({
+    from: "Eddie Originals <hello@eddieoriginals-department.com>",
+    to,
+    subject: `Order Confirmation #${orderId.slice(0, 8).toUpperCase()}`,
+    text: `Hi,
+
+Thank you for your order!
+
+Order ID: ${orderId}
+Total: ${formattedTotal}
+
+We will notify you when your order ships.
+
+View Order: ${orderLink}
+
+—
+Eddie Originals Team`,
+    html: `
+  <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+              font-size: 15px;
+              color: #111;
+              line-height: 1.6;
+              max-width: 520px;
+              margin: 0 auto;">
+    
+    <p>Hi,</p>
+
+    <p>
+      Thank you for your order! We're getting it ready.
+    </p>
+
+    <div style="background: #f9f9f9; padding: 24px; border-radius: 12px; margin: 24px 0;">
+      <p style="margin: 0; font-weight: 600;">Order ID: ${orderId.slice(0, 8).toUpperCase()}</p>
+      <p style="margin: 4px 0 0; color: #666;">Total: ${formattedTotal}</p>
+    </div>
+
+    <p>
+      We will notify you when your order ships.
+    </p>
+
+    <p>
+      <a href="${orderLink}" style="color: #111; text-decoration: underline;">
+        View Order Status
+      </a>
+    </p>
+
+    <p style="margin-top: 32px;">
+      —<br />
+      Eddie Originals Team
+    </p>
+  </div>
+`
+  })
+}
+
+export const sendAdminNewOrderEmail = async ({
+  orderId,
+  total,
+}: {
+  orderId: string
+  total: number
+}) => {
+  const adminEmail = process.env.ADMIN_EMAIL || "hello@eddieoriginals-department.com"
+  const formattedTotal = (total / 100).toLocaleString("en-NG", {
+    style: "currency",
+    currency: "NGN",
+  })
+
+  await resend.emails.send({
+    from: "Eddie Originals <hello@eddieoriginals-department.com>",
+    to: adminEmail,
+    subject: `[New Order] #${orderId.slice(0, 8).toUpperCase()} - ${formattedTotal}`,
+    text: `New order received!
+
+Order ID: ${orderId}
+Total: ${formattedTotal}
+
+Check admin dashboard for details.`,
+  })
+}
+
 export const sendAdminNotificationEmail = async ({
   subject,
   text,

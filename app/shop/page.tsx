@@ -4,10 +4,12 @@ import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { ProductCard } from "@/components/product-card"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Slider } from "@/components/ui/slider"
-import { SlidersHorizontal, X } from "lucide-react"
+import { Search, SlidersHorizontal, X } from "lucide-react"
 import { Product } from "@/types"
 import { Skeleton } from "@/components/ui/skeleton"
+import { isNewProduct } from "@/lib/utils"
 
 export default function ShopPage() {
   return (
@@ -44,9 +46,10 @@ function ShopContent() {
             image: p.images && p.images.length > 0 ? p.images[0] : "/placeholder.svg",
             images: p.images,
             category: p.category || "General",
-            badge: p.stockCount < 5 ? "LOW STOCK" : null, // Example logic
-            rating: 5.0, // Default for now
-            reviews: 0,
+            collection: p.collection,
+            badge: p.stockCount < 5 ? "LOW STOCK" : (isNewProduct(p.createdAt) ? "NEW" : null),
+            rating: p.averageRating || 0,
+            reviews: p.reviewCount || 0,
             description: p.description,
             stockCount: p.stockCount,
             isActive: p.isActive,
@@ -71,10 +74,10 @@ function ShopContent() {
     }
   }, [searchParams])
 
-  const categories = ["ALL", "Winter Essentials", "Street Classics", "Premium Outerwear", "Accessories"]
+  const collections = ["ALL", "Winter Essentials", "Street Classics", "Premium Outerwear", "Accessories"]
 
   const filteredProducts = products.filter((product) => {
-    const matchesCategory = selectedCategory === "ALL" || product.category === selectedCategory
+    const matchesCategory = selectedCategory === "ALL" || product.collection?.toLowerCase() === selectedCategory.toLowerCase()
     const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1]
     return matchesCategory && matchesPrice
   })
@@ -97,7 +100,7 @@ function ShopContent() {
                 <div className="mb-8">
                   <h3 className="font-bold text-sm tracking-wider mb-4">COLLECTIONS</h3>
                   <div className="space-y-3">
-                    {categories.map((cat) => (
+                    {collections.map((cat) => (
                       <button
                         key={cat}
                         onClick={() => setSelectedCategory(cat)}
@@ -160,7 +163,7 @@ function ShopContent() {
                   <div className="mb-6">
                     <h4 className="font-bold text-sm tracking-wider mb-3">COLLECTIONS</h4>
                     <div className="flex flex-wrap gap-2">
-                      {categories.map((cat) => (
+                      {collections.map((cat) => (
                         <Button
                           key={cat}
                           variant={selectedCategory === cat ? "default" : "outline"}

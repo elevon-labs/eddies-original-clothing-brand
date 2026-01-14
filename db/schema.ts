@@ -7,6 +7,7 @@ import {
   integer,
   serial,
   json,
+  real,
 } from "drizzle-orm/pg-core"
 import { relations } from "drizzle-orm"
 import type { AdapterAccountType } from "next-auth/adapters"
@@ -102,7 +103,7 @@ export const products = pgTable("product", {
   sizes: json("sizes").$type<string[]>().default([]),
   colors: json("colors").$type<{ name: string; hex: string }[]>().default([]),
   reviewCount: integer("review_count").default(0),
-  averageRating: integer("average_rating").default(0),
+  averageRating: real("average_rating").default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 })
@@ -130,8 +131,9 @@ export const orders = pgTable("order", {
   userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
   status: text("status").default("pending"), // pending, paid, shipped, delivered, cancelled
   total: integer("total").notNull(),
+  shippingCost: integer("shipping_cost").default(0),
   currency: text("currency").default("NGN"),
-  // paystackReference: text("paystack_reference"),
+  paystackReference: text("paystack_reference"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
   
