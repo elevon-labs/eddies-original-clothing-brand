@@ -4,11 +4,17 @@ import { newsletterSubscribers } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { sendAdminNotificationEmail } from "@/lib/mail";
 import { rateLimit } from "@/lib/rate-limit";
-import { verifyTurnstile } from "@/lib/verify-turnstile";
+import { checkBotId } from "botid/server";
 
 export async function POST(request: Request) {
   try {
-    // 1. Rate Limiting (IP-based)
+    // 1. BotID Check
+    const verification = await checkBotId();
+    if (verification.isBot) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    }
+
+    // 2. Rate Limiting (IP-based)
     const ip = request.headers.get("x-forwarded-for") || "unknown";
     const isAllowed = await rateLimit(`newsletter_${ip}`, 5, 60); // 5 requests per minute
 
@@ -21,19 +27,6 @@ export async function POST(request: Request) {
 
     if (!email) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
-    }
-
-    // 2. Turnstile Verification
-    // We only verify if a token is provided (to support existing clients during migration, or enforce strictness)
-    // For strict security, we should require it.
-    if (token) {
-      const isHuman = await verifyTurnstile(token);
-      if (!isHuman) {
-        return NextResponse.json({ error: "Security check failed. Please try again." }, { status: 400 });
-      }
-    } else if (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) {
-      // If Turnstile is enabled in env but no token sent
-      return NextResponse.json({ error: "Security check required." }, { status: 400 });
     }
 
     // Check if email already exists

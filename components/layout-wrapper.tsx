@@ -1,5 +1,6 @@
 "use client"
 
+import "@/instrumentation-client"
 import { usePathname } from "next/navigation"
 
 interface LayoutWrapperProps {

@@ -7,12 +7,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
-import { TurnstileWidget } from "@/components/turnstile-widget"
 
 export function Newsletter() {
   const [email, setEmail] = useState("")
   const [loading, setLoading] = useState(false)
-  const [turnstileToken, setTurnstileToken] = useState<string>("")
   const { toast } = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -23,7 +21,7 @@ export function Newsletter() {
       const res = await fetch("/api/newsletter/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, token: turnstileToken }),
+        body: JSON.stringify({ email }),
       })
 
       const data = await res.json()
@@ -46,9 +44,6 @@ export function Newsletter() {
         description: "You have been subscribed to our newsletter.",
       })
       setEmail("")
-      // Note: Turnstile token is single-use. The widget usually resets automatically or needs a manual reset.
-      // Since we're clearing the form, we can just let the user verify again if they subscribe with another email immediately.
-      setTurnstileToken("")
     } catch (error: any) {
       toast({
         title: "Error",
@@ -87,7 +82,6 @@ export function Newsletter() {
               SUBSCRIBE
             </Button>
           </div>
-          <TurnstileWidget onVerify={(token) => setTurnstileToken(token)} />
         </form>
       </div>
     </section>

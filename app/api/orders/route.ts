@@ -4,9 +4,16 @@ import { NextResponse } from "next/server"
 import { calculateShipping } from "@/lib/utils"
 import { orders, orderItems } from "@/db/schema"
 import { sendOrderConfirmationEmail, sendAdminNewOrderEmail } from "@/lib/mail"
+import { checkBotId } from "botid/server"
 
 export async function POST(req: Request) {
   try {
+    // BotID Check
+    const verification = await checkBotId()
+    if (verification.isBot) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 })
+    }
+
     const payload: OrderPayload = await req.json()
     const { reference, cartItems, shippingAddress, email, userId, totalAmount, shippingCost } = payload
 
