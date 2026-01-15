@@ -1,8 +1,7 @@
-"use client"
-
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 
 export default function CollectionsPage() {
   const collections = [
@@ -43,13 +42,15 @@ export default function CollectionsPage() {
   return (
     <div className="min-h-screen bg-white text-black">
       
-      {/* Hero Section */}
       <section className="relative h-[50vh] flex items-center justify-center overflow-hidden bg-neutral-900 text-white">
          <div className="absolute inset-0 opacity-50">
-           <img 
+           <Image 
             src="/luxury-streetwear-fashion-editorial-black-and-whit.jpg" 
             alt="Collections Background" 
-            className="w-full h-full object-cover"
+            fill
+            sizes="100vw"
+            className="object-cover"
+            priority
           />
         </div>
         <div className="relative z-10 text-center max-w-4xl px-6">
@@ -72,17 +73,17 @@ export default function CollectionsPage() {
                 index % 2 === 1 ? 'lg:flex-row-reverse' : ''
               }`}
             >
-              {/* Image Side */}
               <div className="w-full lg:w-1/2 relative group overflow-hidden rounded-2xl aspect-[4/5] lg:aspect-square">
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500 z-10" />
-                <img 
+                <Image 
                   src={collection.image} 
                   alt={collection.title}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  fill
+                  sizes="(min-width: 1024px) 50vw, 100vw"
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
                 />
               </div>
 
-              {/* Content Side */}
               <div className="w-full lg:w-1/2 text-center lg:text-left">
                 <div className="inline-block mb-4 px-3 py-1 bg-neutral-100 text-black/60 text-xs tracking-[0.2em] font-semibold rounded-full">
                   COLLECTION 0{index + 1}

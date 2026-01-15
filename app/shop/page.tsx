@@ -27,13 +27,14 @@ function ShopContent() {
 
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  const [visibleCount, setVisibleCount] = useState(12)
 
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const res = await fetch("/api/products?isActive=true")
+        const res = await fetch("/api/products?isActive=true&limit=60&view=list")
         if (res.ok) {
-          const data: Product[] = await res.json()
+          const data: (Product & { averageRating?: number; reviewCount?: number })[] = await res.json()
           const formatted: Product[] = data.map((p) => ({
             id: p.id,
             name: p.name,
@@ -44,8 +45,8 @@ function ShopContent() {
             category: p.category || "General",
             collection: p.collection,
             badge: (p.stockCount ?? 0) < 5 ? "LOW STOCK" : (isNewProduct(p.createdAt) ? "NEW" : null),
-            rating: p.rating ?? 0,
-            reviews: p.reviews ?? 0,
+            rating: p.averageRating ?? p.rating ?? 0,
+            reviews: p.reviewCount ?? p.reviews ?? 0,
             description: p.description,
             stockCount: p.stockCount,
             isActive: p.isActive,
@@ -77,6 +78,10 @@ function ShopContent() {
     const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1]
     return matchesCategory && matchesPrice
   })
+
+  useEffect(() => {
+    setVisibleCount(12)
+  }, [selectedCategory, priceRange])
 
   return (
     <div className="min-h-screen bg-white text-black">
@@ -191,9 +196,9 @@ function ShopContent() {
                 </div>
               )}
 
-              {/* Products Grid */}
-              {loading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Products Grid */}
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {[...Array(6)].map((_, i) => (
                     <div key={i} className="flex flex-col space-y-3">
                       <Skeleton className="h-[400px] w-full rounded-xl" />
@@ -203,14 +208,26 @@ function ShopContent() {
                       </div>
                     </div>
                   ))}
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
-              )}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredProducts.slice(0, visibleCount).map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      )}
+
+      {!loading && filteredProducts.length > visibleCount && (
+        <div className="flex justify-center mt-10">
+          <Button
+            variant="outline"
+            onClick={() => setVisibleCount((prev) => prev + 12)}
+            className="bg-transparent"
+          >
+            Load more
+          </Button>
+        </div>
+      )}
 
               {/* No Results */}
               {filteredProducts.length === 0 && (

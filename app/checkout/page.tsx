@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -17,6 +17,7 @@ import Link from "next/link"
 import { usePaystackPayment } from "react-paystack"
 import { PaystackProps } from "react-paystack/dist/types"
 import { calculateShipping } from "@/lib/utils"
+import Image from "next/image"
 
 const shippingSchema = z.object({
   firstName: z.string().min(2, "First name is required"),
@@ -55,8 +56,8 @@ export default function CheckoutPage() {
     }[]
   >([])
 
-  const shippingCost = calculateShipping(total)
-  const finalTotal = total + shippingCost
+  const shippingCost = useMemo(() => calculateShipping(total), [total])
+  const finalTotal = useMemo(() => total + shippingCost, [total, shippingCost])
 
   const form = useForm<ShippingFormData>({
     resolver: zodResolver(shippingSchema),
@@ -74,7 +75,6 @@ export default function CheckoutPage() {
     },
   })
 
-  // Watch form fields to keep Paystack config updated
   const email = form.watch("email")
   const phone = form.watch("phone")
 
@@ -128,26 +128,25 @@ export default function CheckoutPage() {
     })
   }
 
-  // Paystack Config
   const config: PaystackProps = {
     reference: (new Date()).getTime().toString(),
-    email: email || "", // Use watched value
-    amount: finalTotal * 100, // Paystack expects Kobo
+    email: email || "",
+    amount: finalTotal * 100,
     publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "",
     metadata: {
-        custom_fields: [
-            {
-                display_name: "Cart Items",
-                variable_name: "cart_items",
-                value: items.map(i => `${i.quantity}x ${i.name}`).join(", ")
-            },
-            {
-                display_name: "Phone",
-                variable_name: "phone",
-                value: phone || ""
-            }
-        ]
-    }
+      custom_fields: [
+        {
+          display_name: "Cart Items",
+          variable_name: "cart_items",
+          value: items.map((i) => `${i.quantity}x ${i.name}`).join(", "),
+        },
+        {
+          display_name: "Phone",
+          variable_name: "phone",
+          value: phone || "",
+        },
+      ],
+    },
   }
 
   const initializePayment = usePaystackPayment(config)
@@ -216,8 +215,7 @@ export default function CheckoutPage() {
       console.error("Paystack public key is missing")
       return
     }
-    
-    // Trigger Paystack
+
     initializePayment({ onSuccess, onClose })
   }
 
@@ -355,7 +353,7 @@ export default function CheckoutPage() {
                 {items.map((item) => (
                   <div key={item.cartId} className="flex gap-4 py-2">
                     <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 relative">
-                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                      <Image src={item.image} alt={item.name} fill sizes="64px" className="object-cover" />
                       <span className="absolute bottom-0 right-0 bg-black text-white text-[10px] px-1.5 py-0.5 rounded-tl-md font-medium">x{item.quantity}</span>
                     </div>
                     <div className="flex-1 min-w-0">

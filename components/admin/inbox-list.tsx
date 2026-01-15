@@ -67,38 +67,38 @@ export function InboxList() {
 
   const { toast } = useToast()
 
-  const fetchMessages = async () => {
-    try {
-      const res = await fetch("/api/admin/messages")
-      if (!res.ok) throw new Error("Failed to fetch messages")
-      const data: ApiMessage[] = await res.json()
-      
-      const formattedMessages = data.map((msg) => ({
-        id: msg.id.toString(),
-        name: msg.name,
-        email: msg.email,
-        subject: msg.subject || "No Subject",
-        message: msg.message,
-        date: msg.createdAt,
-        read: msg.isRead,
-      }))
-      
-      setMessages(formattedMessages)
-    } catch (error) {
-      console.error("Error fetching messages:", error)
-      toast({
-        title: "Error",
-        description: "Failed to load messages",
-        variant: "destructive",
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
-
   useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const res = await fetch("/api/admin/messages")
+        if (!res.ok) throw new Error("Failed to fetch messages")
+        const data: ApiMessage[] = await res.json()
+        
+        const formattedMessages = data.map((msg) => ({
+          id: msg.id.toString(),
+          name: msg.name,
+          email: msg.email,
+          subject: msg.subject || "No Subject",
+          message: msg.message,
+          date: msg.createdAt,
+          read: msg.isRead,
+        }))
+        
+        setMessages(formattedMessages)
+      } catch (error) {
+        console.error("Error fetching messages:", error)
+        toast({
+          title: "Error",
+          description: "Failed to load messages",
+          variant: "destructive",
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
     fetchMessages()
-  }, [])
+  }, [toast])
 
   const markAsRead = async (id: string) => {
     try {

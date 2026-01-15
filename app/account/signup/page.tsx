@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation"
 import { signIn } from "next-auth/react"
 import { useToast } from "@/hooks/use-toast"
 import { z } from "zod"
+import Image from "next/image"
 
 import { AccountPolicyInfo } from "@/components/account-policy-info"
 
@@ -103,12 +104,14 @@ export default function SignupPage() {
 
   return (
     <div className="fixed inset-0 w-full h-full bg-black overflow-hidden">
-      {/* Fixed Background Layer */}
       <div className="absolute inset-0 z-0">
-        <img 
+        <Image 
           src="/luxury-streetwear-model-black-clothing-urban-fashi.jpg" 
           alt="Background" 
-          className="w-full h-full object-cover opacity-30 blur-sm scale-110 grayscale"
+          fill
+          sizes="100vw"
+          className="object-cover opacity-30 blur-sm scale-110 grayscale"
+          priority={false}
         />
         <div className="absolute inset-0 bg-white/60 mix-blend-overlay" />
       </div>
@@ -131,10 +134,13 @@ export default function SignupPage() {
                 <div className="flex flex-col items-center mb-6">
                   <Link href="/" className="group flex flex-col items-center gap-2 transition-opacity hover:opacity-80">
                     <div className="p-0.5 border border-black/10 rounded-full">
-                      <img 
+                      <Image 
                         src="/logo.jpg" 
                         alt="Eddie Originals" 
-                        className="h-12 w-12 rounded-full object-cover" 
+                        width={48}
+                        height={48}
+                        className="rounded-full object-cover" 
+                        priority={false}
                       />
                     </div>
                     <span className="font-bold tracking-widest text-base uppercase text-black">EDDIE ORIGINALS</span>

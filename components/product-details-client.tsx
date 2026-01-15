@@ -125,6 +125,7 @@ export function ProductDetailsClient({ initialProduct }: ProductDetailsClientPro
                   src={product.images?.[selectedImage] || "/placeholder.svg"}
                   alt={product.name}
                   fill
+                  sizes="(min-width: 1024px) 50vw, 100vw"
                   className="object-cover"
                   priority
                 />
@@ -149,6 +150,7 @@ export function ProductDetailsClient({ initialProduct }: ProductDetailsClientPro
                       src={img || "/placeholder.svg"}
                       alt={`${product.name} ${idx + 1}`}
                       fill
+                      sizes="96px"
                       className="object-cover"
                     />
                   </button>
