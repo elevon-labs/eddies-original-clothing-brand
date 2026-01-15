@@ -11,6 +11,7 @@ export async function GET(request: Request) {
     const collection = searchParams.get("collection");
     const excludeId = searchParams.get("excludeId");
     const limit = searchParams.get("limit") ? parseInt(searchParams.get("limit")!) : undefined;
+    const view = searchParams.get("view"); // "list" for slimmer listing payload
 
     const conditions = [];
 
@@ -27,8 +28,27 @@ export async function GET(request: Request) {
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+    
+    const baseSelect = view === "list"
+      ? db
+          .select({
+            id: products.id,
+            name: products.name,
+            price: products.price,
+            originalPrice: products.originalPrice,
+            images: products.images,
+            category: products.category,
+            collection: products.collection,
+            stockCount: products.stockCount,
+            reviewCount: products.reviewCount,
+            averageRating: products.averageRating,
+            createdAt: products.createdAt,
+            isActive: products.isActive,
+          })
+          .from(products)
+      : db.select().from(products);
 
-    let query = db.select().from(products).where(whereClause).orderBy(desc(products.createdAt));
+    let query = baseSelect.where(whereClause).orderBy(desc(products.createdAt));
 
     if (limit) {
       // Drizzle's query builder typing does not expose .limit on this chain
@@ -38,7 +58,11 @@ export async function GET(request: Request) {
     }
 
     const result = await query;
-    return NextResponse.json(result);
+    return NextResponse.json(result, {
+      headers: {
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+      },
+    });
   } catch (error) {
     console.error("Error fetching products:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

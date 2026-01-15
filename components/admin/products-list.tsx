@@ -106,7 +106,7 @@ export function ProductsList() {
     }
 
     fetchProducts()
-  }, [])
+  }, [toast])
 
   // Filter Logic
   const filteredProducts = products.filter((product) => {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -56,8 +56,8 @@ export default function CheckoutPage() {
     }[]
   >([])
 
-  const shippingCost = calculateShipping(total)
-  const finalTotal = total + shippingCost
+  const shippingCost = useMemo(() => calculateShipping(total), [total])
+  const finalTotal = useMemo(() => total + shippingCost, [total, shippingCost])
 
   const form = useForm<ShippingFormData>({
     resolver: zodResolver(shippingSchema),
@@ -75,7 +75,6 @@ export default function CheckoutPage() {
     },
   })
 
-  // Watch form fields to keep Paystack config updated
   const email = form.watch("email")
   const phone = form.watch("phone")
 
@@ -129,26 +128,25 @@ export default function CheckoutPage() {
     })
   }
 
-  // Paystack Config
   const config: PaystackProps = {
     reference: (new Date()).getTime().toString(),
-    email: email || "", // Use watched value
-    amount: finalTotal * 100, // Paystack expects Kobo
+    email: email || "",
+    amount: finalTotal * 100,
     publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "",
     metadata: {
-        custom_fields: [
-            {
-                display_name: "Cart Items",
-                variable_name: "cart_items",
-                value: items.map(i => `${i.quantity}x ${i.name}`).join(", ")
-            },
-            {
-                display_name: "Phone",
-                variable_name: "phone",
-                value: phone || ""
-            }
-        ]
-    }
+      custom_fields: [
+        {
+          display_name: "Cart Items",
+          variable_name: "cart_items",
+          value: items.map((i) => `${i.quantity}x ${i.name}`).join(", "),
+        },
+        {
+          display_name: "Phone",
+          variable_name: "phone",
+          value: phone || "",
+        },
+      ],
+    },
   }
 
   const initializePayment = usePaystackPayment(config)
@@ -217,8 +215,7 @@ export default function CheckoutPage() {
       console.error("Paystack public key is missing")
       return
     }
-    
-    // Trigger Paystack
+
     initializePayment({ onSuccess, onClose })
   }
 

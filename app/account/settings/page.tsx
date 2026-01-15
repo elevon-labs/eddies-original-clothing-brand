@@ -98,29 +98,29 @@ export default function SettingsPage() {
   }, [session, profileForm])
 
   useEffect(() => {
+    const fetchAddresses = async () => {
+      try {
+        const res = await fetch("/api/user/addresses")
+        if (res.ok) {
+          const data = await res.json()
+          setAddresses(data)
+        }
+      } catch (error) {
+        console.error("Failed to fetch addresses", error)
+        toast({
+          title: "Error",
+          description: "Failed to load addresses",
+          variant: "destructive",
+        })
+      } finally {
+        setIsAddressesLoading(false)
+      }
+    }
+
     if (status === "authenticated") {
       fetchAddresses()
     }
-  }, [status])
-
-  const fetchAddresses = async () => {
-    try {
-      const res = await fetch("/api/user/addresses")
-      if (res.ok) {
-        const data = await res.json()
-        setAddresses(data)
-      }
-    } catch (error) {
-      console.error("Failed to fetch addresses", error)
-      toast({
-        title: "Error",
-        description: "Failed to load addresses",
-        variant: "destructive",
-      })
-    } finally {
-      setIsAddressesLoading(false)
-    }
-  }
+  }, [status, toast])
 
   const onProfileSubmit = async (data: ProfileFormValues) => {
     setIsProfileLoading(true)

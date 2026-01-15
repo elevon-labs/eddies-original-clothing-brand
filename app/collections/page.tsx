@@ -1,5 +1,3 @@
-"use client"
-
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
 import Link from "next/link"
@@ -52,6 +50,7 @@ export default function CollectionsPage() {
             fill
             sizes="100vw"
             className="object-cover"
+            priority
           />
         </div>
         <div className="relative z-10 text-center max-w-4xl px-6">

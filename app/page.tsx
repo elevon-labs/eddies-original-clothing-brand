@@ -1,5 +1,8 @@
 import Link from "next/link"
 import Image from "next/image"
+
+export const revalidate = 3600 // Revalidate every hour
+
 import { TikTok } from "@/components/icons"
 import { Button } from "@/components/ui/button"
 import { Newsletter } from "@/components/newsletter"
