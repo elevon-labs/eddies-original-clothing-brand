@@ -17,6 +17,7 @@ import Link from "next/link"
 import { usePaystackPayment } from "react-paystack"
 import { PaystackProps } from "react-paystack/dist/types"
 import { calculateShipping } from "@/lib/utils"
+import Image from "next/image"
 
 const shippingSchema = z.object({
   firstName: z.string().min(2, "First name is required"),
@@ -355,7 +356,7 @@ export default function CheckoutPage() {
                 {items.map((item) => (
                   <div key={item.cartId} className="flex gap-4 py-2">
                     <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 relative">
-                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                      <Image src={item.image} alt={item.name} fill sizes="64px" className="object-cover" />
                       <span className="absolute bottom-0 right-0 bg-black text-white text-[10px] px-1.5 py-0.5 rounded-tl-md font-medium">x{item.quantity}</span>
                     </div>
                     <div className="flex-1 min-w-0">
