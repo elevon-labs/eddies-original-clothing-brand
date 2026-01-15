@@ -34,7 +34,7 @@ export async function PUT(req: Request) {
     }
 
     const { name, password } = result.data
-    const updateData: any = { name }
+    const updateData: { name: string; password?: string } = { name }
 
     if (password && password.length > 0) {
       // Fetch current user to check password

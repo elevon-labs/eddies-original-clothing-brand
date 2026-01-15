@@ -31,7 +31,6 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
   const { data: session } = useSession()
   const { toast } = useToast()
   const [reviews, setReviews] = useState<Review[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const [isWriting, setIsWriting] = useState(false)
   const [newReview, setNewReview] = useState({ rating: 5, title: "", content: "" })
   const [hoveredStar, setHoveredStar] = useState(0)
@@ -50,8 +49,6 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
         }
       } catch (error) {
         console.error("Failed to fetch reviews", error)
-      } finally {
-        setIsLoading(false)
       }
     }
     fetchReviews()
@@ -93,11 +90,7 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
 
       const savedReview = await res.json()
       
-      // Add user details for immediate display (API might return review without user join initially if we just return the insert result, 
-      // but usually we want to re-fetch or construct it manually. 
-      // The API returns `newReview[0]` which is just the review row. 
-      // We need to attach user info to update UI optimistically or fetch again.
-      // Let's construct it manually for UI update.)
+      // Manually construct review with user details for optimistic UI update
       
       const reviewWithUser: Review = {
         ...savedReview,
@@ -116,7 +109,7 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
         title: "Review submitted",
         description: "Thank you for sharing your feedback!",
       })
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to submit review. Please try again.",

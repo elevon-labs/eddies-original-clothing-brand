@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/components/cart-provider"
 import { calculateShipping } from "@/lib/utils"
@@ -15,8 +16,8 @@ export default function CartPage() {
   const { data: session } = useSession()
   const router = useRouter()
 
-  const shippingCost = calculateShipping(total)
-  const finalTotal = total + shippingCost
+  const shippingCost = useMemo(() => calculateShipping(total), [total])
+  const finalTotal = useMemo(() => total + shippingCost, [total, shippingCost])
 
   const handleCheckout = () => {
     if (!session) {

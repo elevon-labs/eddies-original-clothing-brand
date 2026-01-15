@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { products, newsletterSubscribers, messages, orders } from "@/db/schema";
+import { products, newsletterSubscribers, messages } from "@/db/schema";
 import { count, eq, lt, desc } from "drizzle-orm";
 
 export async function GET() {
@@ -21,9 +21,32 @@ export async function GET() {
     // 2. Fetch Recent Activity
     // We'll fetch the last 5 items from each category and sort them in code to get the true mixed timeline
     
-    const recentProducts = await db.select().from(products).orderBy(desc(products.createdAt)).limit(5);
-    const recentSubscribers = await db.select().from(newsletterSubscribers).orderBy(desc(newsletterSubscribers.subscribedAt)).limit(5);
-    const recentMessages = await db.select().from(messages).orderBy(desc(messages.createdAt)).limit(5);
+    const recentProducts = await db
+      .select({
+        name: products.name,
+        createdAt: products.createdAt,
+      })
+      .from(products)
+      .orderBy(desc(products.createdAt))
+      .limit(5);
+
+    const recentSubscribers = await db
+      .select({
+        email: newsletterSubscribers.email,
+        subscribedAt: newsletterSubscribers.subscribedAt,
+      })
+      .from(newsletterSubscribers)
+      .orderBy(desc(newsletterSubscribers.subscribedAt))
+      .limit(5);
+
+    const recentMessages = await db
+      .select({
+        subject: messages.subject,
+        createdAt: messages.createdAt,
+      })
+      .from(messages)
+      .orderBy(desc(messages.createdAt))
+      .limit(5);
     
     // Normalize and combine
     const activities = [

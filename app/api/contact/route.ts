@@ -3,11 +3,17 @@ import { db } from "@/db";
 import { messages } from "@/db/schema";
 import { sendAdminNotificationEmail } from "@/lib/mail";
 import { rateLimit } from "@/lib/rate-limit";
-import { verifyTurnstile } from "@/lib/verify-turnstile";
+import { checkBotId } from "botid/server";
 
 export async function POST(request: Request) {
   try {
-    // 1. Rate Limiting (IP-based)
+    // 1. BotID Check
+    const verification = await checkBotId();
+    if (verification.isBot) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    }
+
+    // 2. Rate Limiting (IP-based)
     const ip = request.headers.get("x-forwarded-for") || "unknown";
     const isAllowed = await rateLimit(`contact_${ip}`, 3, 60); // 3 requests per minute (stricter than newsletter)
 
@@ -16,20 +22,10 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { name, email, subject, message, token } = body;
+    const { name, email, subject, message } = body;
 
     if (!name || !email || !message) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-    }
-
-    // 2. Turnstile Verification
-    if (token) {
-      const isHuman = await verifyTurnstile(token);
-      if (!isHuman) {
-        return NextResponse.json({ error: "Security check failed. Please try again." }, { status: 400 });
-      }
-    } else if (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) {
-      return NextResponse.json({ error: "Security check required." }, { status: 400 });
     }
 
     await db.insert(messages).values({

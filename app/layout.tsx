@@ -1,6 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
 
@@ -112,6 +113,7 @@ export default async function RootLayout({
           <Toaster />
         </SessionProvider>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )

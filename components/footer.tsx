@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Instagram, Twitter, Facebook } from "lucide-react"
+import { Instagram } from "lucide-react"
 import { TikTok } from "@/components/icons"
 
 export function Footer() {

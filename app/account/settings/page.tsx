@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { useSession, signOut } from "next-auth/react"
 import { Loader2, LogOut, User, ShieldCheck, Plus, Trash2, MapPin, Eye, EyeOff, Info } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useForm } from "react-hook-form"
@@ -98,29 +98,29 @@ export default function SettingsPage() {
   }, [session, profileForm])
 
   useEffect(() => {
+    const fetchAddresses = async () => {
+      try {
+        const res = await fetch("/api/user/addresses")
+        if (res.ok) {
+          const data = await res.json()
+          setAddresses(data)
+        }
+      } catch (error) {
+        console.error("Failed to fetch addresses", error)
+        toast({
+          title: "Error",
+          description: "Failed to load addresses",
+          variant: "destructive",
+        })
+      } finally {
+        setIsAddressesLoading(false)
+      }
+    }
+
     if (status === "authenticated") {
       fetchAddresses()
     }
-  }, [status])
-
-  const fetchAddresses = async () => {
-    try {
-      const res = await fetch("/api/user/addresses")
-      if (res.ok) {
-        const data = await res.json()
-        setAddresses(data)
-      }
-    } catch (error) {
-      console.error("Failed to fetch addresses", error)
-      toast({
-        title: "Error",
-        description: "Failed to load addresses",
-        variant: "destructive",
-      })
-    } finally {
-      setIsAddressesLoading(false)
-    }
-  }
+  }, [status, toast])
 
   const onProfileSubmit = async (data: ProfileFormValues) => {
     setIsProfileLoading(true)

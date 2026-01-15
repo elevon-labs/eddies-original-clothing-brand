@@ -30,7 +30,7 @@ export function NewsletterList({ subscriberCount }: { subscriberCount: number })
         title: "CSV exported",
         description: "Subscriber list has been downloaded",
       })
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to export CSV",

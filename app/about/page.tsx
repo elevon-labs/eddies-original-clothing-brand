@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { Metadata } from "next"
+import Image from "next/image"
 
 export const metadata: Metadata = {
   title: "About Us",
@@ -35,10 +36,13 @@ export default function AboutPage() {
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-2 gap-16 items-center mb-24">
             <div className="relative h-[600px] rounded-2xl overflow-hidden">
-              <img
+              <Image
                 src="/luxury-streetwear-fashion-editorial-black-and-whit.jpg"
                 alt="Eddie Originals Story"
-                className="w-full h-full object-cover"
+                fill
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="object-cover"
+                priority
               />
             </div>
             <div>
@@ -82,10 +86,12 @@ export default function AboutPage() {
               </div>
             </div>
             <div className="relative h-[600px] rounded-2xl overflow-hidden order-1 md:order-2">
-              <img
+              <Image
                 src="/luxury-streetwear-model-black-clothing-urban-fashi.jpg"
                 alt="Eddie Originals Community"
-                className="w-full h-full object-cover"
+                fill
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="object-cover"
               />
             </div>
           </div>

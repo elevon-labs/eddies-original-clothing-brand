@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs"
 import { z } from "zod"
 import { generateVerificationToken } from "@/lib/tokens"
 import { sendVerificationEmail } from "@/lib/mail"
+import { checkBotId } from "botid/server"
 
 const signupSchema = z.object({
   name: z.string().min(2),
@@ -21,6 +22,12 @@ import { rateLimit } from "@/lib/rate-limit"
 
 export async function POST(req: Request) {
   try {
+    // BotID Check
+    const verification = await checkBotId()
+    if (verification.isBot) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 })
+    }
+
     const body = await req.json()
     const result = signupSchema.safeParse(body)
 

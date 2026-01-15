@@ -21,6 +21,12 @@ import { Skeleton } from "@/components/ui/skeleton"
 import Link from "next/link"
 import { isNewProduct } from "@/lib/utils"
 
+interface RelatedApiProduct extends Product {
+  averageRating?: number | null
+  reviewCount?: number | null
+  stockCount?: number
+}
+
 interface ProductDetailsClientProps {
   initialProduct: Product
 }
@@ -51,15 +57,15 @@ export function ProductDetailsClient({ initialProduct }: ProductDetailsClientPro
         }
         const res = await fetch(url)
         if (res.ok) {
-          const data = await res.json()
+          const data: RelatedApiProduct[] = await res.json()
           setRelatedProducts(
-            data.map((p: any) => ({
+            data.map((p) => ({
               ...p,
               images: p.images && p.images.length > 0 ? p.images : ["/placeholder.svg"],
               rating: p.averageRating || 0,
               reviews: p.reviewCount || 0,
-              inStock: p.stockCount > 0,
-              badge: p.stockCount < 5 ? "LOW STOCK" : (isNewProduct(p.createdAt) ? "NEW" : null),
+              inStock: (p.stockCount ?? 0) > 0,
+              badge: (p.stockCount ?? 0) < 5 ? "LOW STOCK" : (isNewProduct(p.createdAt) ? "NEW" : null),
             }))
           )
         }
@@ -119,6 +125,7 @@ export function ProductDetailsClient({ initialProduct }: ProductDetailsClientPro
                   src={product.images?.[selectedImage] || "/placeholder.svg"}
                   alt={product.name}
                   fill
+                  sizes="(min-width: 1024px) 50vw, 100vw"
                   className="object-cover"
                   priority
                 />
@@ -143,6 +150,7 @@ export function ProductDetailsClient({ initialProduct }: ProductDetailsClientPro
                       src={img || "/placeholder.svg"}
                       alt={`${product.name} ${idx + 1}`}
                       fill
+                      sizes="96px"
                       className="object-cover"
                     />
                   </button>

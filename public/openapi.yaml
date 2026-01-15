@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Eddie Originals API
-  description: API documentation for Eddie Originals E-commerce Platform (Phase 1)
+  description: API documentation for Eddie Originals E-commerce Platform
   version: 1.0.0
 servers:
   - url: http://localhost:3000
@@ -11,7 +11,7 @@ paths:
   /api/auth/signup:
     post:
       summary: Register a new user
-      description: Creates a new user account with email and password.
+      description: Creates a new user account and sends a verification email. Includes bot protection and rate limiting.
       tags:
         - Authentication
       requestBody:
@@ -19,81 +19,49 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - name
-                - email
-                - password
-              properties:
-                name:
-                  type: string
-                  example: "John Doe"
-                  minLength: 2
-                email:
-                  type: string
-                  format: email
-                  example: "john@example.com"
-                password:
-                  type: string
-                  format: password
-                  example: "securePassword123"
-                  minLength: 6
+              $ref: '#/components/schemas/SignupRequest'
       responses:
         '201':
           description: User created successfully
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "User created successfully"
-                  user:
-                    type: object
-                    properties:
-                      id:
-                        type: string
-                      email:
-                        type: string
+                $ref: '#/components/schemas/SignupResponse'
         '400':
           description: Invalid input
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "Invalid input"
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '403':
+          description: Bot detected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '409':
           description: User already exists
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "User already exists"
-        '500':
-          description: Server error
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Too many attempts
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "Internal server error"
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /api/auth/signin:
     post:
-      summary: Sign in (NextAuth)
-      description: |
-        Initiates the sign-in flow. Note: This is handled by NextAuth.js. 
-        For credentials, it's usually a POST to /api/auth/callback/credentials.
-        This documentation simplifies the conceptual flow.
+      summary: Sign in (NextAuth credentials)
+      description: Initiates the sign-in flow through NextAuth. In most cases this is proxied to /api/auth/callback/credentials.
       tags:
         - Authentication
       requestBody:
@@ -101,21 +69,949 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                password:
-                  type: string
-                csrfToken:
-                  type: string
+              $ref: '#/components/schemas/SigninRequest'
       responses:
         '200':
           description: Successful login
         '401':
           description: Unauthorized
 
+  /api/auth/reset-password:
+    post:
+      summary: Request password reset
+      description: Sends a password reset email if the account exists. Rate limited per IP and email.
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '200':
+          description: Reset email sent (if account exists)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessageResponse'
+        '429':
+          description: Too many attempts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/new-password:
+    post:
+      summary: Set new password
+      description: Validates a password reset token and updates the user password.
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewPasswordRequest'
+      responses:
+        '200':
+          description: Password updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessageResponse'
+        '400':
+          description: Invalid token or password input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/user/profile:
+    put:
+      summary: Update user profile
+      description: Updates the authenticated user's name and optionally password.
+      tags:
+        - User
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileUpdateRequest'
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessageResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/user/addresses:
+    get:
+      summary: List user addresses
+      description: Returns all saved shipping addresses for the authenticated user.
+      tags:
+        - User
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: List of addresses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Address'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new address
+      description: Creates a new shipping address for the authenticated user. Optionally marks it as default.
+      tags:
+        - User
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressCreateRequest'
+      responses:
+        '201':
+          description: Address created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/user/addresses/{id}:
+    delete:
+      summary: Delete an address
+      description: Deletes a shipping address belonging to the authenticated user.
+      tags:
+        - User
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Address deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessageResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Address not found or unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/products:
+    get:
+      summary: List products
+      description: Returns a list of products with optional filters.
+      tags:
+        - Products
+      parameters:
+        - name: isActive
+          in: query
+          schema:
+            type: string
+            enum:
+              - "true"
+        - name: collection
+          in: query
+          schema:
+            type: string
+        - name: excludeId
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a product
+      description: Creates a new product. Admin only.
+      tags:
+        - Products
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductRequest'
+      responses:
+        '200':
+          description: Product created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/products/{id}:
+    get:
+      summary: Get a product
+      description: Returns a single product by ID.
+      tags:
+        - Products
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Product found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Replace product
+      description: Updates all product fields. Admin only.
+      tags:
+        - Products
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductRequest'
+      responses:
+        '200':
+          description: Product updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Partially update product
+      description: Updates selected product fields. Admin only.
+      tags:
+        - Products
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductPatchRequest'
+      responses:
+        '200':
+          description: Product updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete product
+      description: Deletes a product by ID. Admin only.
+      tags:
+        - Products
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Product deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/products/{id}/reviews:
+    get:
+      summary: List product reviews
+      description: Returns reviews for a product, including basic user info for each review.
+      tags:
+        - Products
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of reviews
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductReview'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a product review
+      description: Creates a review for a product. Authenticated users only.
+      tags:
+        - Products
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReviewRequest'
+      responses:
+        '200':
+          description: Review created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductReview'
+        '400':
+          description: Missing rating or content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/orders:
+    post:
+      summary: Create order after Paystack payment
+      description: Verifies a Paystack transaction and creates an order with items, sending confirmation emails.
+      tags:
+        - Orders
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderPayload'
+      responses:
+        '200':
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+        '400':
+          description: Missing fields, payment verification failure, or amount mismatch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Bot detected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Failed to create order
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/newsletter/subscribe:
+    post:
+      summary: Subscribe to newsletter
+      description: Subscribes an email address to the newsletter with bot protection and rate limiting.
+      tags:
+        - Newsletter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewsletterSubscribeRequest'
+      responses:
+        '200':
+          description: Subscription successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Email missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Bot detected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Already subscribed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Too many requests from this IP
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/newsletter/export:
+    get:
+      summary: Export newsletter subscribers as CSV
+      description: Exports all newsletter subscribers in CSV format. Admin only.
+      tags:
+        - Newsletter
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: CSV download
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/contact:
+    post:
+      summary: Submit contact message
+      description: Submits a contact form and notifies the admin. Includes bot protection and rate limiting.
+      tags:
+        - Contact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactRequest'
+      responses:
+        '200':
+          description: Message submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Bot detected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/admin/dashboard:
+    get:
+      summary: Admin dashboard metrics and activity
+      description: Returns metrics for products, subscribers, and messages, plus recent activity. Admin only.
+      tags:
+        - Admin
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminDashboardResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/admin/messages:
+    get:
+      summary: List contact messages
+      description: Returns all contact messages, newest first. Admin only.
+      tags:
+        - Admin
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdminMessage'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Bulk delete archived messages
+      description: Deletes all messages marked as read when type=all_archived. Admin only.
+      tags:
+        - Admin
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum:
+              - all_archived
+      responses:
+        '200':
+          description: Messages deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Invalid delete type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/admin/messages/{id}:
+    patch:
+      summary: Update message read status
+      description: Marks a message as read or unread. Admin only.
+      tags:
+        - Admin
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminMessageUpdateRequest'
+      responses:
+        '200':
+          description: Message updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Invalid body or ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete a message
+      description: Deletes a single message by ID. Admin only.
+      tags:
+        - Admin
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Message deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Invalid ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/upload-signature:
+    post:
+      summary: Generate Cloudinary upload signature
+      description: Generates a signature and returns Cloudinary upload configuration. Admin only.
+      tags:
+        - Media
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadSignatureRequest'
+      responses:
+        '200':
+          description: Signature generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadSignatureResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/webhooks/paystack:
+    post:
+      summary: Paystack webhook
+      description: Receives events from Paystack and validates the signature before processing.
+      tags:
+        - Webhooks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaystackWebhookPayload'
+      responses:
+        '200':
+          description: Webhook processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericStatusResponse'
+        '401':
+          description: Missing or invalid signature
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Webhook error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: next-auth.session-token
+
   schemas:
     User:
       type: object
@@ -126,6 +1022,574 @@ components:
           type: string
         email:
           type: string
+          format: email
         role:
           type: string
-          enum: [user, admin]
+          enum:
+            - user
+            - admin
+
+    SignupRequest:
+      type: object
+      required:
+        - name
+        - email
+        - password
+      properties:
+        name:
+          type: string
+          minLength: 2
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+          description: Must contain at least one uppercase letter and one number or special character.
+
+    SignupResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: User created successfully
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+            email:
+              type: string
+              format: email
+
+    SigninRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+        csrfToken:
+          type: string
+
+    ResetPasswordRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+
+    NewPasswordRequest:
+      type: object
+      required:
+        - password
+        - token
+      properties:
+        password:
+          type: string
+          minLength: 8
+          description: Must contain at least one uppercase letter and one number or special character.
+        token:
+          type: string
+
+    ProfileUpdateRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 2
+        password:
+          type: string
+          minLength: 8
+          description: Optional new password. Must differ from the existing password.
+
+    Address:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        name:
+          type: string
+        line1:
+          type: string
+        line2:
+          type: string
+          nullable: true
+        city:
+          type: string
+        state:
+          type: string
+        postalCode:
+          type: string
+        country:
+          type: string
+        phone:
+          type: string
+        isDefault:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AddressCreateRequest:
+      type: object
+      required:
+        - name
+        - line1
+        - city
+        - state
+        - postalCode
+        - country
+        - phone
+      properties:
+        name:
+          type: string
+        line1:
+          type: string
+        line2:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        postalCode:
+          type: string
+        country:
+          type: string
+        phone:
+          type: string
+        isDefault:
+          type: boolean
+          default: false
+
+    ProductColor:
+      type: object
+      properties:
+        name:
+          type: string
+        hex:
+          type: string
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        collection:
+          type: string
+          nullable: true
+        price:
+          type: integer
+          description: Price in smallest currency unit (for example Kobo).
+        originalPrice:
+          type: integer
+          nullable: true
+        stockCount:
+          type: integer
+        sizes:
+          type: array
+          items:
+            type: string
+        colors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductColor'
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+        isActive:
+          type: boolean
+        averageRating:
+          type: number
+        reviewCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateProductRequest:
+      type: object
+      required:
+        - name
+        - description
+        - category
+        - collection
+        - prices
+        - stock
+        - sizes
+        - colors
+        - images
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        collection:
+          type: string
+        prices:
+          type: object
+          required:
+            - selling
+          properties:
+            selling:
+              type: string
+              description: Selling price as stringified integer.
+            original:
+              type: string
+              description: Optional original price as stringified integer.
+        stock:
+          type: string
+          description: Stock count as stringified integer.
+        sizes:
+          type: array
+          items:
+            type: string
+        colors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductColor'
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+        isActive:
+          type: boolean
+          default: true
+
+    ProductPatchRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        collection:
+          type: string
+        price:
+          type: string
+          description: New price as stringified integer.
+        stock:
+          type: string
+          description: New stock count as stringified integer.
+        isActive:
+          type: boolean
+
+    ProductReview:
+      type: object
+      properties:
+        id:
+          type: string
+        rating:
+          type: integer
+        title:
+          type: string
+          nullable: true
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        user:
+          type: object
+          properties:
+            name:
+              type: string
+              nullable: true
+            image:
+              type: string
+              nullable: true
+
+    CreateReviewRequest:
+      type: object
+      required:
+        - rating
+        - content
+      properties:
+        rating:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+
+    CartItem:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        price:
+          type: number
+        image:
+          type: string
+        quantity:
+          type: integer
+        size:
+          type: string
+        color:
+          type: string
+        colorHex:
+          type: string
+        cartId:
+          type: string
+        productId:
+          type: string
+          nullable: true
+
+    ShippingAddress:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - email
+        - phone
+        - addressLine1
+        - city
+        - state
+        - postalCode
+        - country
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        addressLine1:
+          type: string
+        addressLine2:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        postalCode:
+          type: string
+        country:
+          type: string
+
+    OrderPayload:
+      type: object
+      required:
+        - reference
+        - cartItems
+        - shippingAddress
+        - email
+        - totalAmount
+      properties:
+        reference:
+          type: string
+        cartItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItem'
+        shippingAddress:
+          $ref: '#/components/schemas/ShippingAddress'
+        email:
+          type: string
+          format: email
+        userId:
+          type: string
+          nullable: true
+        totalAmount:
+          type: number
+          description: Amount in smallest currency unit (for example Kobo).
+        shippingCost:
+          type: number
+          description: Optional shipping cost in smallest currency unit.
+
+    OrderResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        orderId:
+          type: string
+
+    NewsletterSubscribeRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+
+    ContactRequest:
+      type: object
+      required:
+        - name
+        - email
+        - message
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        subject:
+          type: string
+        message:
+          type: string
+
+    AdminDashboardMetrics:
+      type: object
+      properties:
+        totalProducts:
+          type: integer
+        activeProducts:
+          type: integer
+        lowStockProducts:
+          type: integer
+        totalSubscribers:
+          type: integer
+        unreadMessages:
+          type: integer
+
+    AdminDashboardActivityItem:
+      type: object
+      properties:
+        type:
+          type: string
+        action:
+          type: string
+        item:
+          type: string
+        date:
+          type: string
+          format: date-time
+          nullable: true
+
+    AdminDashboardResponse:
+      type: object
+      properties:
+        metrics:
+          $ref: '#/components/schemas/AdminDashboardMetrics'
+        recentActivity:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminDashboardActivityItem'
+
+    AdminMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        subject:
+          type: string
+          nullable: true
+        message:
+          type: string
+        isRead:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    AdminMessageUpdateRequest:
+      type: object
+      required:
+        - isRead
+      properties:
+        isRead:
+          type: boolean
+
+    UploadSignatureRequest:
+      type: object
+      required:
+        - paramsToSign
+      properties:
+        paramsToSign:
+          type: object
+          additionalProperties: true
+
+    UploadSignatureResponse:
+      type: object
+      properties:
+        signature:
+          type: string
+        apiKey:
+          type: string
+        cloudName:
+          type: string
+
+    PaystackWebhookPayload:
+      type: object
+      properties:
+        event:
+          type: string
+        data:
+          type: object
+          additionalProperties: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        details:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+
+    SuccessMessageResponse:
+      type: object
+      properties:
+        success:
+          type: string
+
+    GenericStatusResponse:
+      type: object
+      properties:
+        status:
+          type: string
