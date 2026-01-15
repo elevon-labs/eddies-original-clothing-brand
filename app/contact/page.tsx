@@ -41,7 +41,7 @@ export default function ContactPage() {
         description: "Thank you for contacting us. We'll get back to you soon.",
       })
       setFormData({ name: "", email: "", subject: "", message: "" })
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to send message. Please try again.",

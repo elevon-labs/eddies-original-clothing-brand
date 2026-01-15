@@ -40,8 +40,20 @@ export default function CheckoutPage() {
   const { toast } = useToast()
   const [isProcessing, setIsProcessing] = useState(false)
   const [mounted, setMounted] = useState(false)
-  const [savedAddresses, setSavedAddresses] = useState<any[]>([])
-  const [isLoadingAddresses, setIsLoadingAddresses] = useState(false)
+  const [savedAddresses, setSavedAddresses] = useState<
+    {
+      id: string
+      name: string
+      phone?: string | null
+      line1: string
+      line2?: string | null
+      city: string
+      state: string
+      postalCode: string
+      country?: string | null
+      isDefault?: boolean | null
+    }[]
+  >([])
 
   const shippingCost = calculateShipping(total)
   const finalTotal = total + shippingCost
@@ -82,9 +94,7 @@ export default function CheckoutPage() {
       form.setValue("lastName", names.slice(1).join(" ") || "")
       form.setValue("email", session.user.email || "")
       
-      // Fetch saved addresses
       const fetchAddresses = async () => {
-        setIsLoadingAddresses(true)
         try {
           const res = await fetch("/api/user/addresses")
           if (res.ok) {
@@ -93,8 +103,6 @@ export default function CheckoutPage() {
           }
         } catch (error) {
           console.error("Failed to fetch addresses", error)
-        } finally {
-          setIsLoadingAddresses(false)
         }
       }
       
@@ -102,7 +110,7 @@ export default function CheckoutPage() {
     }
   }, [session, form])
 
-  const handleSelectAddress = (address: any) => {
+  const handleSelectAddress = (address: (typeof savedAddresses)[number]) => {
     const names = address.name.split(" ")
     form.setValue("firstName", names[0] || "")
     form.setValue("lastName", names.slice(1).join(" ") || "")
@@ -144,7 +152,7 @@ export default function CheckoutPage() {
 
   const initializePayment = usePaystackPayment(config)
 
-  const onSuccess = async (reference: any) => {
+  const onSuccess = async (reference: { reference: string }) => {
     setIsProcessing(true)
     try {
       const orderPayload = {
@@ -163,7 +171,7 @@ export default function CheckoutPage() {
         body: JSON.stringify(orderPayload),
       })
 
-      const data = await res.json()
+      const data = await res.json() as { error?: string; orderId: string }
 
       if (!res.ok) throw new Error(data.error || "Order creation failed")
 
@@ -189,7 +197,7 @@ export default function CheckoutPage() {
     })
   }
 
-  const onSubmit = (data: ShippingFormData) => {
+  const onSubmit = () => {
     if (items.length === 0) {
       toast({
         title: "Cart Empty",

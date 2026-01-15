@@ -17,7 +17,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     verificationTokensTable: verificationTokens,
   }),
   providers: [
-    ...authConfig.providers.filter((provider: any) => provider.id !== "credentials"),
+    ...authConfig.providers.filter((provider) => provider.id !== "credentials"),
     Credentials({
       name: "Credentials",
       credentials: {

@@ -6,26 +6,9 @@ import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Star } from "lucide-react"
-import { useState } from "react"
-import { useToast } from "@/hooks/use-toast"
 import { Product } from "@/types"
 
 export function ProductCard({ product }: { product: Product }) {
-  const [isWishlisted, setIsWishlisted] = useState(false)
-  const { toast } = useToast()
-
-  const handleWishlist = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsWishlisted(!isWishlisted)
-    
-    toast({
-      title: isWishlisted ? "Removed from wishlist" : "Added to wishlist",
-      description: isWishlisted 
-        ? `${product.name} has been removed from your wishlist.`
-        : `${product.name} has been added to your wishlist.`,
-    })
-  }
 
   const discountPercent = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)

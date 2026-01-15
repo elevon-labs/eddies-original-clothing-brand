@@ -17,7 +17,7 @@ const addressSchema = z.object({
   isDefault: z.boolean().default(false),
 })
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
     const session = await auth()
 

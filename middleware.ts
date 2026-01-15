@@ -11,7 +11,6 @@ export default auth((req) => {
   const role = user?.role
 
   const isAuthRoute = nextUrl.pathname.startsWith("/api/auth")
-  const isPublicRoute = ["/", "/account/login", "/account/signup", "/account/verify"].includes(nextUrl.pathname)
   const isAdminRoute = nextUrl.pathname.startsWith("/admin")
 
   // Allow API auth routes

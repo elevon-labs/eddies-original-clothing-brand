@@ -31,11 +31,9 @@ import {
   PaginationContent,
   PaginationItem,
   PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
 } from "@/components/ui/pagination"
 import { Card, CardContent } from "@/components/ui/card"
-import { Edit, Trash2, Search, ArrowUpDown, Loader2 } from "lucide-react"
+import { Edit, Trash2, Search, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 type Product = {
@@ -47,6 +45,17 @@ type Product = {
   visible: boolean
   category: string
   collection: string
+}
+
+interface ApiProduct {
+  id: string
+  name: string
+  images?: string[]
+  price: number
+  stockCount?: number
+  isActive: boolean
+  category?: string | null
+  collection?: string | null
 }
 
 type SortConfig = {
@@ -64,39 +73,38 @@ export function ProductsList() {
 
   const itemsPerPage = 10
 
-  const fetchProducts = async () => {
-    try {
-      setLoading(true)
-      const res = await fetch("/api/products")
-      if (!res.ok) throw new Error("Failed to fetch products")
-      const data = await res.json()
-      
-      // Transform API data to UI model
-      const formattedProducts = data.map((p: any) => ({
-        id: p.id,
-        name: p.name,
-        image: p.images && p.images.length > 0 ? p.images[0] : "/placeholder.svg",
-        price: p.price,
-        stock: p.stockCount || 0,
-        visible: p.isActive,
-        category: p.category || "Uncategorized",
-        collection: p.collection || "General",
-      }))
-
-      setProducts(formattedProducts)
-    } catch (error) {
-      console.error("Error fetching products:", error)
-      toast({
-        title: "Error",
-        description: "Failed to load products",
-        variant: "destructive",
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
-
   useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true)
+        const res = await fetch("/api/products")
+        if (!res.ok) throw new Error("Failed to fetch products")
+        const data: ApiProduct[] = await res.json()
+
+        const formattedProducts = data.map((p) => ({
+          id: p.id,
+          name: p.name,
+          image: p.images && p.images.length > 0 ? p.images[0] : "/placeholder.svg",
+          price: p.price,
+          stock: p.stockCount || 0,
+          visible: p.isActive,
+          category: p.category || "Uncategorized",
+          collection: p.collection || "General",
+        }))
+
+        setProducts(formattedProducts)
+      } catch (error) {
+        console.error("Error fetching products:", error)
+        toast({
+          title: "Error",
+          description: "Failed to load products",
+          variant: "destructive",
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
     fetchProducts()
   }, [])
 

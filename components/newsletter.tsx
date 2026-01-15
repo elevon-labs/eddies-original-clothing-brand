@@ -44,10 +44,11 @@ export function Newsletter() {
         description: "You have been subscribed to our newsletter.",
       })
       setEmail("")
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Something went wrong. Please try again."
       toast({
         title: "Error",
-        description: error.message || "Something went wrong. Please try again.",
+        description: message,
         variant: "destructive",
       })
     } finally {

@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { CheckCircle2, ShoppingBag, ArrowRight } from "lucide-react"
+import { CheckCircle2 } from "lucide-react"
 import { useEffect, useState, Suspense } from "react"
 
 function SuccessContent() {
