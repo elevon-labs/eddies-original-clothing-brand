@@ -41,6 +41,16 @@ interface Message {
   read: boolean
 }
 
+interface ApiMessage {
+  id: string | number
+  name: string
+  email: string
+  subject?: string | null
+  message: string
+  createdAt: string
+  isRead: boolean
+}
+
 export function InboxList() {
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
@@ -61,9 +71,9 @@ export function InboxList() {
     try {
       const res = await fetch("/api/admin/messages")
       if (!res.ok) throw new Error("Failed to fetch messages")
-      const data = await res.json()
+      const data: ApiMessage[] = await res.json()
       
-      const formattedMessages = data.map((msg: any) => ({
+      const formattedMessages = data.map((msg) => ({
         id: msg.id.toString(),
         name: msg.name,
         email: msg.email,

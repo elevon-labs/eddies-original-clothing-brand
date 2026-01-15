@@ -4,9 +4,8 @@ import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { ProductCard } from "@/components/product-card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Slider } from "@/components/ui/slider"
-import { Search, SlidersHorizontal, X } from "lucide-react"
+import { SlidersHorizontal, X } from "lucide-react"
 import { Product } from "@/types"
 import { Skeleton } from "@/components/ui/skeleton"
 import { isNewProduct } from "@/lib/utils"
@@ -34,11 +33,8 @@ function ShopContent() {
       try {
         const res = await fetch("/api/products?isActive=true")
         if (res.ok) {
-          const data = await res.json()
-          // Transform API data to match ProductCard props if needed
-          // API returns: id, name, price, images[], category, etc.
-          // ProductCard expects: id, name, price, image, category, etc.
-          const formatted: Product[] = data.map((p: any) => ({
+          const data: Product[] = await res.json()
+          const formatted: Product[] = data.map((p) => ({
             id: p.id,
             name: p.name,
             price: p.price,
@@ -47,9 +43,9 @@ function ShopContent() {
             images: p.images,
             category: p.category || "General",
             collection: p.collection,
-            badge: p.stockCount < 5 ? "LOW STOCK" : (isNewProduct(p.createdAt) ? "NEW" : null),
-            rating: p.averageRating || 0,
-            reviews: p.reviewCount || 0,
+            badge: (p.stockCount ?? 0) < 5 ? "LOW STOCK" : (isNewProduct(p.createdAt) ? "NEW" : null),
+            rating: p.rating ?? 0,
+            reviews: p.reviews ?? 0,
             description: p.description,
             stockCount: p.stockCount,
             isActive: p.isActive,

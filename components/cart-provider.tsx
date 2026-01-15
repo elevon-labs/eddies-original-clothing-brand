@@ -24,14 +24,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const saved = localStorage.getItem("eddie-cart")
     if (saved) {
       try {
-        const parsed = JSON.parse(saved)
+        const parsed = JSON.parse(saved) as CartItem[]
         setItems(
-          parsed.map((item: any) => ({
+          parsed.map((item) => ({
             ...item,
             cartId: item.cartId || `${item.id}-${item.size || ""}-${item.color || ""}`,
           })),
         )
-      } catch (e) {
+      } catch {
         console.error("Failed to parse cart from local storage")
       }
     }

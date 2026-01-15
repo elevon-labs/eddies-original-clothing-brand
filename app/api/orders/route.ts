@@ -4,9 +4,16 @@ import { NextResponse } from "next/server"
 import { calculateShipping } from "@/lib/utils"
 import { orders, orderItems } from "@/db/schema"
 import { sendOrderConfirmationEmail, sendAdminNewOrderEmail } from "@/lib/mail"
+import { checkBotId } from "botid/server"
 
 export async function POST(req: Request) {
   try {
+    // BotID Check
+    const verification = await checkBotId()
+    if (verification.isBot) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 })
+    }
+
     const payload: OrderPayload = await req.json()
     const { reference, cartItems, shippingAddress, email, userId, totalAmount, shippingCost } = payload
 
@@ -14,15 +21,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
-    // Validate calculations (server-side)
-    const subtotal = cartItems.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0)
+    const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
     const expectedShipping = calculateShipping(subtotal)
-    // totalAmount is in Kobo, subtotal/shipping in Naira (based on previous analysis)
-    const expectedTotalKobo = (subtotal + expectedShipping) * 100
-
-    // Allow small margin of error? Or exact match?
-    // Given integer math, it should be exact.
-    // But let's check if the client sent shippingCost.
     
     // 1. Verify with Paystack
     const verifyReq = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {

@@ -1,4 +1,3 @@
-import { LayoutWrapper } from "@/components/layout-wrapper"
 import { Metadata } from "next"
 
 export const metadata: Metadata = {

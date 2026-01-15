@@ -31,7 +31,9 @@ export async function GET(request: Request) {
     let query = db.select().from(products).where(whereClause).orderBy(desc(products.createdAt));
 
     if (limit) {
-      // @ts-ignore
+      // Drizzle's query builder typing does not expose .limit on this chain
+      // even though it is supported at runtime.
+      // @ts-expect-error: limit is available at runtime on this query
       query = query.limit(limit);
     }
 

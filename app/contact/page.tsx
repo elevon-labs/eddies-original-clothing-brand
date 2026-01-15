@@ -10,12 +10,10 @@ import { Mail, Phone, MapPin, Instagram, Loader2 } from "lucide-react"
 import { TikTok } from "@/components/icons"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
-import { TurnstileWidget } from "@/components/turnstile-widget"
 
 export default function ContactPage() {
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
-  const [turnstileToken, setTurnstileToken] = useState<string>("")
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -25,13 +23,25 @@ export default function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const trimmedEmail = formData.email.trim()
+    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)
+
+    if (!isValidEmail) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      })
+      return
+    }
+
     setLoading(true)
     
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, token: turnstileToken }),
+        body: JSON.stringify({ ...formData, email: trimmedEmail }),
       })
       
       const data = await res.json()
@@ -43,9 +53,7 @@ export default function ContactPage() {
         description: "Thank you for contacting us. We'll get back to you soon.",
       })
       setFormData({ name: "", email: "", subject: "", message: "" })
-      // Reset Turnstile token
-      setTurnstileToken("")
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to send message. Please try again.",
@@ -132,8 +140,6 @@ export default function ContactPage() {
                     className="resize-none flex-1 min-h-[200px] text-base"
                   />
                 </div>
-
-                <TurnstileWidget onVerify={(token) => setTurnstileToken(token)} />
 
                 <Button
                   type="submit"

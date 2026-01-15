@@ -77,10 +77,11 @@ export default function SignupPage() {
       })
 
       router.push("/account/check-email")
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Something went wrong. Please try again."
       toast({
         title: "Error",
-        description: error.message,
+        description: message,
         variant: "destructive",
       })
     } finally {

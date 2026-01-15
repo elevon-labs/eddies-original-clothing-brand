@@ -155,7 +155,7 @@ export const sendOrderConfirmationEmail = async ({
 }: {
   to: string
   orderId: string
-  items: any[]
+  items: { name: string; quantity: number; price: number }[]
   total: number
 }) => {
   const orderLink = `${getBaseUrl()}/account/orders/${orderId}`
@@ -163,6 +163,17 @@ export const sendOrderConfirmationEmail = async ({
     style: "currency",
     currency: "NGN",
   })
+
+  const itemsSummaryText = items
+    .map((item) => `- ${item.name} x${item.quantity}`)
+    .join("\n")
+
+  const itemsSummaryHtml = items
+    .map(
+      (item) =>
+        `<li><strong>${item.name}</strong> &times; ${item.quantity}</li>`,
+    )
+    .join("")
 
   await resend.emails.send({
     from: "Eddie Originals <hello@eddieoriginals-department.com>",
@@ -174,6 +185,9 @@ Thank you for your order!
 
 Order ID: ${orderId}
 Total: ${formattedTotal}
+
+Items:
+${itemsSummaryText}
 
 We will notify you when your order ships.
 
@@ -194,12 +208,17 @@ Eddie Originals Team`,
     <p>
       Thank you for your order! We're getting it ready.
     </p>
-
+    
     <div style="background: #f9f9f9; padding: 24px; border-radius: 12px; margin: 24px 0;">
       <p style="margin: 0; font-weight: 600;">Order ID: ${orderId.slice(0, 8).toUpperCase()}</p>
       <p style="margin: 4px 0 0; color: #666;">Total: ${formattedTotal}</p>
     </div>
 
+    <p style="margin: 16px 0 4px; font-weight: 600;">Items:</p>
+    <ul style="margin: 0 0 16px 20px; padding: 0; color: #333;">
+      ${itemsSummaryHtml}
+    </ul>
+    
     <p>
       We will notify you when your order ships.
     </p>

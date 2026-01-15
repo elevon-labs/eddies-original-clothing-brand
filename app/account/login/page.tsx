@@ -4,7 +4,6 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
 import { Suspense, useState, useEffect } from "react"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 import { signIn } from "next-auth/react"
@@ -56,7 +55,7 @@ function LoginForm() {
         router.push(callbackUrl)
         router.refresh()
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Something went wrong",
@@ -83,7 +82,7 @@ function LoginForm() {
         })
         setVerificationNeeded(false)
       }
-    } catch (error) {
+    } catch {
        toast({
         title: "Error",
         description: "Failed to send email.",

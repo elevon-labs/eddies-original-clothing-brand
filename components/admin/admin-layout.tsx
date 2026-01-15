@@ -4,7 +4,7 @@ import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { type ReactNode, useState } from "react"
-import { useRouter, usePathname } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { LayoutDashboard, Package, Mail, MessageSquare, LogOut, ChevronRight, Menu } from "lucide-react"
@@ -19,7 +19,6 @@ const navigation = [
 import { signOut } from "next-auth/react"
 
 export function AdminLayout({ children }: { children: ReactNode }) {
-  const router = useRouter()
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
 

@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
-import { Upload, X, Star, ImageIcon, Plus, Info } from "lucide-react"
+import { Upload, X, Star, Plus, Info } from "lucide-react"
 
 const sizes = ["XS", "S", "M", "L", "XL", "XXL"]
 const categories = ["Tees", "Hoodies", "Outerwear", "Bottoms", "Accessories"]

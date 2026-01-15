@@ -58,10 +58,17 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
 
     const { id } = await params;
-    const body = await request.json();
+    const body = await request.json() as {
+      name?: string
+      description?: string
+      category?: string
+      collection?: string
+      price?: string
+      stock?: string
+      isActive?: boolean
+    };
     
-    // Dynamic update object
-    const updateData: any = { updatedAt: new Date() };
+    const updateData: Record<string, unknown> = { updatedAt: new Date() };
     if (body.name !== undefined) updateData.name = body.name;
     if (body.description !== undefined) updateData.description = body.description;
     if (body.category !== undefined) updateData.category = body.category;
